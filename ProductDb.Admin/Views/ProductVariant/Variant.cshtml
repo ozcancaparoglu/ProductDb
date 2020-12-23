@@ -1,0 +1,439 @@
+﻿@inject CustomLocalizer localizer
+@using ProductDb.Admin.PageModels.ProductVariant
+@model ProductVariantViewModel
+
+<script type="text/x-kendo-template" id="template">
+    <div class="tabstrip">
+        <ul>
+            <li class="k-state-active">
+                Product Variant
+            </li>
+        </ul>
+        <div>
+            <div class="productVariants"></div>
+        </div>
+    </div>
+</script>
+
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title">@localizer["Product"] @localizer["Variants"]</h3>
+            </div>
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                @localizer["Parent"] @localizer["Product"] @localizer["Selection"]
+                            </div>
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <select asp-for="ParentProductId" asp-items="@(new SelectList(Model.ParentProducts,"Id","Sku"))">
+                                        </select>
+                                    </div>
+                                </div>
+                                <hr />
+                                <button id="btnGetParentsProducts" class="btn btn-primary" type="button"><span class="glyphicon glyphicon-refresh small">  @localizer["Call"] </span></button>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                @localizer["Variant"] @localizer["Attribute"] @localizer["Selection"]
+                            </div>
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <select multiple="multiple" data-placeholder="Select attribute(s)..." asp-for="AttributeId" asp-items="@(new SelectList(Model.Attributes,"Id","Name"))">
+                                        </select>
+                                    </div>
+                                </div>
+                                <hr />
+                                <button id="btnProductWithAttribute" class="btn btn-primary" type="button"><span class="glyphicon glyphicon-refresh small"> @localizer["Call"] </span></button>
+                                <button id="btnClearProductVariants" class="btn btn-primary" type="button"><span class="glyphicon glyphicon-erase"> @localizer["Clear"] </span></button>
+                            </div>
+                            <div id="variantedAttributes" class="panel-footer" style="display:none">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                @localizer["Products"]
+                            </div>
+                            <div class="panel-body">
+                                <div id="grid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="viewContent">
+</div>
+<div id="variantedContent">
+</div>
+
+<script>
+    var parentProductId = 0;
+    var selectedAttributes = [];
+
+    function ChangeVariant(e) {
+
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/ProductVariant/SaveChangeProductVariant",
+                dataType: "json",
+                type: "POST",
+                data: { baseId: 0, productId: dataItem.productId },
+                cache: false,
+                success: function (response) {
+                    if (response.status) {
+                        ParentProducts();
+                        alert(response.message);
+                    }
+                },
+                error: function (response) {
+                    console.log(response.responseText);
+                }
+            })
+
+
+             @*var modalContent = $("#viewContent");
+                // content modal empty
+             modalContent.empty();
+                // call not varianted products
+             $.ajax({
+                    url: "/@localizer.CurrentLanguage/ProductVariant/ChangeProductVariant/" + dataItem.productId,
+                    dataType: "html",
+                    type: "GET",
+                    cache: false,
+                    success: function (response) {
+                        modalContent.html(response);
+                        var modal = $("#modal-base-products");
+                        modal.modal('show');
+                        modal.on('hidden.bs.modal', function () {
+                            ParentProducts();
+                        })
+                    },
+                    error: function (response) {
+                     debugger;
+                        console.log(response.responseText);
+                    }
+              })*@
+    }
+        @*function ChangeVariant(e) {
+             e.preventDefault();
+             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var modalContent = $("#viewContent");
+                // content modal empty
+             modalContent.empty();
+                // call not varianted products
+             $.ajax({
+                    url: "/@localizer.CurrentLanguage/ProductVariant/ChangeProductVariant/" + dataItem.productId,
+                    dataType: "html",
+                    type: "GET",
+                    cache: false,
+                    success: function (response) {
+                        modalContent.html(response);
+                        var modal = $("#modal-base-products");
+                        modal.modal('show');
+                        modal.on('hidden.bs.modal', function () {
+                            ParentProducts();
+                        })
+                    },
+                    error: function (response) {
+                     debugger;
+                        console.log(response.responseText);
+                    }
+              })
+    }*@
+
+
+    function AddNewVariant(e) {
+
+        debugger;
+             e.preventDefault();
+             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+               var modalContent = $("#viewContent");
+                // prepare data
+                var data = {
+                    id: dataItem.id,
+                    parentProductId: dataItem.parentProductId,
+                    IDs: selectedAttributes
+                };
+                // content modal empty
+                modalContent.empty();
+                // call not varianted products
+                $.ajax({
+                    url: "/@localizer.CurrentLanguage/ProductVariant/GetNotVariantedProducts",
+                    dataType: "html",
+                    type: "POST",
+                    cache: false,
+                    data: data,
+                    success: function (response) {
+                        modalContent.html(response);
+                        var modal = $("#modal-variant");
+                        modal.modal('show');
+                        modal.on('hidden.bs.modal', function () {
+                            ParentProducts();
+                        })
+
+                    },
+                    error: function (response) {
+                        console.log(response.responseText);
+                    }
+                })
+
+
+        }
+    // Parent Products
+    var ParentProducts = function () {
+
+            selectedAttributes = [];
+
+            var ParentProductId = $("#@Html.IdFor(model=> model.ParentProductId)").val();
+            var Attributes = $("#@Html.IdFor(model=> model.AttributeId)").getKendoMultiSelect();
+
+            var attributeItems = Attributes.dataItems();
+            parentProductId = ParentProductId;
+            // selected attributes
+            for (var i = 0; i < attributeItems.length; i++) {
+                selectedAttributes.push(attributeItems[i].value);
+            }
+
+            var grid = $("#grid").data("kendoGrid");
+            if (grid != undefined) {
+                grid.destroy();
+            }
+
+            $("#grid").kendoGrid({
+                        dataSource: {
+                        transport: {
+                                    read:
+                                    {
+                                        url: "/@localizer.CurrentLanguage/ProductVariant/ParentsProducts/" + ParentProductId,
+                                        dataType: "json",
+                                        type: "POST",
+                                        data: {
+                                            IDs: selectedAttributes
+                                        }
+                                    }
+                            },
+                            pageSize: 20
+                        },
+                        height: 850,
+                        filterable: {
+                            mode: "row"
+                        },
+                        sortable: true,
+                        pageable: false,
+                        detailTemplate: kendo.template($("#template").html()),
+                        detailInit: detailInit,
+                        dataBound: function() {
+                            this.expandRow(this.tbody.find("tr.k-master-row").first());
+                        },
+                        columns: [
+                            {
+                                field: "sku",
+                                title: "SKU"
+                            },
+                            {
+                                field: "title",
+                                title: "Title"
+                            },
+                            {
+                                command:
+                                {
+                                    text: "@localizer["AddNew"] @localizer["Variant"]",
+                                    click: AddNewVariant
+                                },
+                                title: " ",
+                                width: "180px"
+                            }
+                        ]
+                    });
+        }
+
+    function detailInit(e) {
+
+        if (selectedAttributes.length == 0) {
+            alert("Attribute Not Selected");
+            return;
+        }
+                    var detailRow = e.detailRow;
+                    detailRow.find(".tabstrip").kendoTabStrip({
+                        animation: {
+                            open: { effects: "fadeIn" }
+                        }
+                    });
+
+                    detailRow.find(".productVariants").kendoGrid({
+                        dataSource: {
+                            transport: {
+                                read: {
+                                    url: "/@localizer.CurrentLanguage/ProductVariant/ProductVariants/" + e.data.id,
+                                    dataType: "json",
+                                    type: "POST",
+                                    data: {
+                                        IDs: selectedAttributes
+                                    }
+                                }
+                            },
+                            pageSize: 7
+                        },
+                        filterable: {
+                            mode: "row"
+                        },
+                        scrollable: false,
+                        sortable: true,
+                        pageable: true,
+                        columns: [
+                            { field: "product.sku", title:"@localizer["Sku"]", width: "70px" },
+                            { field: "product.title", title: "@localizer["Title"]", width: "110px" },
+                            { field: "parentProductSku", title:"Parent", width: "110px" },
+                            {
+                                command:
+                                {
+                                    text: "Çıkart",
+                                    click: ChangeVariant
+                                },
+                                title: " ",
+                                width: "180px"
+                            }
+                        ]
+                    });
+     }
+
+
+    // Clear ParentProduct Variants
+    function ClearProductVariant() {
+
+        bootbox.confirm({
+            message: "Varyantlar Silinecektir Onaylıyor Musunuz ?",
+            buttons: {
+                confirm: {
+                    label: 'Yes',
+                    className: 'btn-success'
+                },
+                cancel: {
+                    label: 'No',
+                    className: 'btn-danger'
+                }
+            },
+            callback: function (result) {
+
+                if (result) {
+                    debugger;
+                    if (parentProductId == undefined || parentProductId == "") {
+                        alert("Parent Not Selected");
+                        return;
+                    }
+                    // clear parent product variants
+                    $.ajax({
+                        url: "/@localizer.CurrentLanguage/productvariant/ClearProductVariants/" + parentProductId,
+                        dataType: "json",
+                        type: "GET",
+                        success: function (response) {
+                            ParentProducts();
+                            alert(response.message);
+                        },
+                        error: function (response) {
+                            alert(response.message);
+                        }
+                    })
+
+                }
+            }
+        });
+
+    }
+
+    // Get Varianted Attributes Name
+    function GetVariantedAttributesName() {
+        if (parentProductId == 0) {
+            return;
+        }
+        var variantedAttributes = $("#variantedAttributes");
+        $.ajax({
+            url: "/@localizer.CurrentLanguage/productvariant/GetVariantedAttributesName/" + parentProductId,
+            type: "GET",
+            dataType: "json",
+            beforeSend: function () {
+                variantedAttributes.empty();
+            },
+            success: function (response) {
+                variantedAttributes.html("Varyantlanmış Özellikler => " + response.message).css({
+                    "display":"block",
+                    "font-weight": "bold"
+                });
+            },
+            erorr: function (response) {
+                console.log(response);
+            }
+        })
+    }
+
+    $(function () {
+
+        $("#@Html.IdFor(model=> model.ParentProductId)").select2();
+        $("#@Html.IdFor(model=> model.AttributeId)").kendoMultiSelect().data("kendoMultiSelect");
+
+        // Get Selected Parent Product Products
+        $("#btnGetParentsProducts,#btnProductWithAttribute").on("click", function () {
+            var validationMessage = "";
+            // validation message
+            validationMessage += $("#@Html.IdFor(model=> model.AttributeId)").val() == "" ? "@localizer["Attribute"] @localizer["NonSelected"].\n" : "";
+            validationMessage += $("#@Html.IdFor(model=> model.ParentProductId)").val() == "" ? "@localizer["Parent"] @localizer["Product"] @localizer["NonSelected"].\n" : "";
+            parentProductId = $("#@Html.IdFor(model=> model.ParentProductId)").val();
+            // get varianted names
+            GetVariantedAttributesName();
+            if (validationMessage != "") {
+                return;
+            }
+            // get products
+            ParentProducts();
+        })
+
+        $("#btnClearProductVariants").on("click", function () {
+            if (parentProductId != 0) {
+                ClearProductVariant();
+            }
+        })
+    });
+</script>
+
+
+<style>
+    .k-detail-cell .k-tabstrip .k-content {
+        padding: 0.2em;
+    }
+
+    .employee-details ul {
+        list-style: none;
+        font-style: italic;
+        margin: 15px;
+        padding: 0;
+    }
+
+        .employee-details ul li {
+            margin: 0;
+            line-height: 1.7em;
+        }
+
+    .employee-details label {
+        display: inline-block;
+        width: 90px;
+        padding-right: 10px;
+        text-align: right;
+        font-style: normal;
+        font-weight: bold;
+    }
+</style>
+

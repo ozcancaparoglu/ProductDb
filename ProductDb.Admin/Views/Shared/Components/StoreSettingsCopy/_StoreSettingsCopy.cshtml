@@ -1,0 +1,100 @@
+﻿@inject CustomLocalizer localizer
+@model StoreProductViewModel
+
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+
+<div class="modal fade" id="modal-store-copy">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button id="closeModal" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title">@localizer["Target"] @localizer["Store"] (@Model.StoreCopyTypeName)</h4>
+            </div>
+            <form id="copySettingsToTargetStore">
+                <div class="modal-body">
+                    <div class="form-group">
+                        @Html.HiddenFor(x => x.StoreId)
+                        @Html.HiddenFor(x => x.StoreCopyType)
+                        <select asp-items="@(new SelectList(Model.Stores,"Id","Name"))" id="TargetStoreId" class="select2">
+                            <option value="">@localizer["Select"]</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">@localizer["Close"]</button>
+                    <button type="submit" class="btn btn-primary">@localizer["Save"]</button>
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script>
+    $(function () {
+
+         $('.select2').select2();
+
+        $("#copySettingsToTargetStore").on("submit", function (e) {
+            var loading = $("#cover-spin");
+            e.preventDefault();
+            // target store dropdown selected
+            var targetStoreId = $("#TargetStoreId").val();
+            var copyTypeId = $("#@Html.IdFor(x => x.StoreCopyType)").val();
+            var storeId = $("#@Html.IdFor(x => x.StoreId)").val();
+
+            var validationMessage = "";
+            // validation control
+            validationMessage += targetStoreId == "" ? "Target Store Not Selected" : "";
+            console.log(copyTypeId);
+            if (validationMessage != "") {
+                alert(validationMessage);
+                return;
+            }
+
+            bootbox.confirm({
+                message: "Hedef mağazadaki ayarlar silinip bu mağazadakiler üzerine yazılacaktır onaylıyor musunuz?",
+                buttons: {
+                    confirm: {
+                        label: 'Evet',
+                        className: 'btn-success'
+                    },
+                    cancel: {
+                        label: 'Hayır',
+                        className: 'btn-danger'
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        // ajax call
+                        $.ajax({
+                            url: "/@localizer.CurrentLanguage/store/storeSettingsInsert/" + storeId + "/" + targetStoreId + "/" + copyTypeId,
+                            dataType: "json",
+                            type: "POST",
+                            cache: false,
+                            async: true,
+                            beforeSend: function () {
+                                loading.show();
+                            },
+                            success: function (response) {
+                                alert(response.message);
+                            },
+                            error: function (response) {
+                                loading.show();
+                                console.log(response.responseText);
+                            },
+                            complete: function () {
+                                loading.hide();
+                                $("#closeModal").trigger("click");
+                            }
+                        })
+                    }
+                }
+            }); 
+        })
+    });
+
+</script>

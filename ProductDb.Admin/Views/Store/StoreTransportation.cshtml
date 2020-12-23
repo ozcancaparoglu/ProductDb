@@ -1,0 +1,239 @@
+﻿@model TransportationViewModel
+@inject CustomLocalizer localizer
+@using ProductDb.Admin.Helpers
+
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <input type="hidden" asp-for="StoreModel.Id" />
+                <h3 class="box-title"><b> @Model.StoreModel.Name </b> @localizer["Transportations"]</h3>
+            </div>
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                @localizer["Search"] @localizer["Transportation"]
+                            </div>
+                            <div class="panel-body">
+                                @*<div class="form-group">
+                                        @Html.HiddenFor(model => model.StoreModel.Id)
+                                        <label>@localizer["Transportation Types"] :  </label>
+                                        <select class="select2 form-control" asp-for="TransportationTypeModel" asp-items="@(new SelectList(Model.TransportationTypes,"Id","Name"))">
+                                            <option>--@localizer["Select"]--</option>
+                                        </select>
+                                    </div>*@
+                                <div class="form-group">
+                                    @Html.HiddenFor(model => model.StoreModel.Id)
+                                    <label>@localizer["Transportation Types"] :  </label>
+                                    <select id="TransportationTypeEnum" class="select2 form-control">
+                                        @foreach (var kvp in TransportationTypeEnum.GetTip)
+                                        {
+                                            <option value="@kvp.Value">@kvp.Key</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="panel-footer">
+                                <button type="button" name="Transportations" id="Transportations" class="btn bg-blue">
+                                    <i class="fa fa-search"></i>
+                                    @localizer["Search"]
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title">Store Transportations</h3>
+            </div>
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div id="grid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+    $(function () {
+        $('.select2').select2();
+
+        var getDatas = function () {
+            //var datas = [];
+            var storeId = $("#@Html.IdFor(x=>x.StoreModel.Id)").val();
+            @*var transTypeId = $("#@Html.IdFor(x=>x.TransportationTypeModel)").val();*@
+
+            var typeText =  $("#TransportationTypeEnum option:selected" ).text();
+
+            var url = "";
+
+            var grid = $("#grid");
+
+            var defaultValue;
+
+            if (typeText == "Brand") {
+                url = "/@localizer.CurrentLanguage/store/transportationbrands/" + storeId;
+            } else if (typeText == "Product") {
+                url = "/@localizer.CurrentLanguage/store/transportationproducts/" + storeId;
+            }
+
+            //var data = {
+            //    storeId: storeId
+            //}
+
+            //$.ajax({
+            //    url: url,
+            //    type: "GET",
+            //    dataType: "json",
+            //    data: data,
+            //    async: false,
+            //    success: function (response) {
+            //        $.each(response, function (index,item) {
+            //            console.log(item);
+            //            datas.push({
+            //                id: item.id,
+            //                storeId: item.storeId,
+            //                transportationTypeId: item.transportationTypeId,
+            //                entityId: item.entityId,
+            //                currencyId: item.currencyId,
+            //                value: item.value,
+            //                currency: item.currency,
+            //                name: item.name
+            //            });
+            //        })
+            //    },
+            //    error: function (response) {
+            //        console.log(response.responseText);
+            //    }
+            //})
+            //console.log(datas);
+
+
+
+            var kendoData = grid.data("kendoGrid");
+
+            if (kendoData!= undefined) {
+                kendoData.destroy();
+            }
+
+            var dataSource = new kendo.data.DataSource({
+                pageSize: 20,
+                transport: {
+                                   read: {
+                                       url: url,
+                                       dataType: "json",
+                                       type: "GET"
+                                    },
+                                    update: {
+                                        url: "/@localizer.CurrentLanguage/Store/UpdateTransportation",
+                                        dataType: "json",
+                                        type: "POST"
+                                    },
+                                    destroy: {
+                                        url: "/@localizer.CurrentLanguage/Store/DeleteTransportation",
+                                        dataType: "json",
+                                        type: "POST"
+                                    }
+                           },
+                schema: {
+                    model: {
+                        id: "id",
+                        fields: {
+                            id: { editable: false, nullable: true },
+                            "storeId": { editable: false, nullable: true },
+                            "name": { editable: false, nullable: true },
+                            "transportationType": { editable: true },
+                            "entityId": { editable: false },
+                            "currency": { defaultValue: { id: 1, name: "TRY" } },
+                            //"currencyId": { type: "number", validation: { required: true, min: 1 } },
+                            "value": { type: "number", validation: { required: true, min: 0 } }
+                        }
+                    }
+                }
+            });
+
+            grid.kendoGrid({
+                dataSource: dataSource,
+                pageable: true,
+                height: 550,
+                sortable: true,
+                filterable: {
+                    mode: "row"
+                },
+                columns: [
+                    { field: "name", title: "Name" },
+                    { field: "value", title: "Value", width: "130px", filterable: false, },
+                    { field: "currency", title: "Currency", width: "180px", editor: categoryDropDownEditor, template: "#=currency.abbrevation#", filterable: false },
+                    { field: "transportationType", title: "Transportation", width: "180px", editor: transportationTypeDropDownEditor, template: "#=transportationType.name#", filterable: false },
+                    { command: ["edit", "destroy"], title: "&nbsp;", width: "250px" }],
+                    editable: "inline"
+            });
+
+        }
+
+        $("#Transportations").on("click", function () {
+            getDatas();
+        })
+
+    })
+
+    function categoryDropDownEditor(container, options) {
+
+        $('<input required name="' + options.field + '"/>')
+            .appendTo(container)
+            .kendoDropDownList({
+                autoBind: false,
+                dataTextField: "abbrevation",
+                dataValueField: "id",
+                dataSource: {
+                    type: "json",
+                    transport: {
+                        read: "/@localizer.CurrentLanguage/currency/AllList"
+                    }
+                }
+            });
+    }
+
+    function transportationTypeDropDownEditor(container, options) {
+
+         var TransportationType = [];
+         var selectedValues = $("#TransportationTypeEnum").val();
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/store/TransportationTypeEnum",
+                type: "POST",
+                data: { IDs: selectedValues},
+                dataType: "json",
+                async: false,
+                success: function (response) {
+                    TransportationType = response;
+                },
+                error: function (response) {
+                    console.log(response.responseText);
+                }
+            })
+
+        $('<input required name="' + options.field + '"/>')
+            .appendTo(container)
+            .kendoDropDownList({
+                autoBind: false,
+                dataTextField: "name",
+                dataValueField: "id",
+                dataSource: {
+                    data: TransportationType
+                }
+            });
+    }
+
+</script>

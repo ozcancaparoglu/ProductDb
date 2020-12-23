@@ -1,0 +1,170 @@
+﻿@model UserViewModel
+@inject CustomLocalizer localizer
+
+@using (Html.BeginForm("Edit", "User", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.HiddenFor(model => model.User.ProcessedBy)
+    @Html.HiddenFor(model => model.User.Id)
+    @Html.HiddenFor(model => model.User.CreatedDate)
+    @Html.HiddenFor(model => model.User.State)
+    <!-- Content Header (Page header) -->
+    <section class="content-header clearfix">
+        <h1 class="pull-left">
+            @localizer["User"]
+            <small>@localizer["Edit"]</small>
+        </h1>
+
+        <div class="pull-right">
+            <button type="submit" name="save" class="btn bg-blue">
+                <i class="fa fa-floppy-o"></i>
+                @localizer["Edit"]
+            </button>
+            <button type="button" class="btn bg-blue" data-toggle="modal" data-target="#modal-password">
+                @localizer["ChangePassword"]
+            </button>
+            <a href="/@localizer.CurrentLanguage/user/list" class="btn bg-red">
+                <i class="fa fa-ban"></i>
+                @localizer["Cancel"]
+            </a>
+        </div>
+    </section>
+
+    @if (!ViewBag.Validation)
+    {
+        <section class="content">
+            <div class="row">
+                <div class="box box-primary">
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="alert alert-danger">
+                                    <h4><i class="icon fa fa-ban"></i> @localizer["ValidationFailure"]</h4>
+                                    @localizer["MandotaryFailure"] <br />
+                                    @localizer["ExistingFailure"] <br />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+
+
+    <section class="content">
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">@localizer["Edit"] @localizer["User"]</h3>
+                </div>
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    @localizer["General"] @localizer["Information"]
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label for="userName">@localizer["User"] @localizer["Name"]</label>
+                                        @Html.TextBoxFor(model => model.User.Username, new { @class = "form-control", placeholder = "Enter username" })
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="userEmail">@localizer["Email"]</label>
+                                        @Html.TextBoxFor(model => model.User.Email, new { @class = "form-control", placeholder = "Enter email" })
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="userRole">@localizer["User"] @localizer["Role"]</label>
+                                        @Html.DropDownListFor(model => model.User.UserRoleId, new SelectList(Model.UserRoles, "Id", "Name"), "Select", new { @class = "form-control select2" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="RolePermissionList">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+@await Component.InvokeAsync("ChangePassword", new { storeId = Model.User.Id })
+
+<script>
+
+    //$(document).ready(function () {
+
+    //});
+
+    $(document).ready(function () {
+
+        //var UserRole = $("#User_UserRoleId");
+        //GetRolePermissions();
+        //UserRole.on("change", function () {
+        //    GetRolePermissions();
+        //});
+
+        $('.select2').select2();
+        $('form input[type="submit"]').prop("disabled", true);
+        $(".agree").click(function () {
+            if ($(this).prop("checked") == true) {
+                $('form input[type="submit"]').prop("disabled", false);
+            }
+            else if ($(this).prop("checked") == false) {
+                $('form input[type="submit"]').prop("disabled", true);
+            }
+        });
+    });
+
+    function GetRolePermissions() {
+        debugger;
+        var id = $("#User_UserRoleId").val();
+        if (id != "") {
+            GetUserRoles(id);
+        }
+        else
+            $(".RolePermissionList").html('');
+    }
+    function GetUserRoles(id) {
+        var list = $(".RolePermissionList");
+        list.html('');
+
+        var url = "/@localizer.CurrentLanguage/User/GetUserRoles/" + id;
+        $.ajax({
+            cache: false,
+            async: true,
+            url: url,
+            dataType: "html",
+            type: "GET",
+            success: function (response) {
+                list.html(response);
+            },
+            error: function (response) {
+                alert(response.responseText);
+            }
+        })
+    }
+
+    function togglePassword() {
+        var element = document.getElementById('passwordInput');
+        var ielement = document.getElementById('passwordInput');
+
+        element.prop = (element.prop == 'disabled' ? '' : 'disabled');
+        //ielement.prop = (element.prop =='disabled' ? '' : '')
+
+        //if (element.prop == 'disabled') {
+        //    element.prop == '';
+        //    $("#newPassword").removeClass("fa fa-minus");
+        //}
+        //else if (element.prop == '') {
+        //    element.prop == 'disabled';
+        //    $("#newPassword").removeClass("fa fa-plus");
+        //}
+        ////element.prop = (element.prop == 'disabled' ? '' : 'disabled');
+        //$("#newPassword").toggleClass("open");
+    }
+
+</script>

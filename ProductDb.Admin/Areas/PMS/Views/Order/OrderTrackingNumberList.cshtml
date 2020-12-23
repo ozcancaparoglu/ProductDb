@@ -1,0 +1,213 @@
+﻿
+@model OrderViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+@*<style>
+    .k-grid .k-grid-header .k-header .k-link {
+        height: auto;
+    }
+
+
+    .k-grid .k-grid-header .k-header {
+        white-space: normal;
+        font-weight: bold !important;
+    }
+
+
+    .kendo-table-outter {
+        overflow-x: auto;
+    }
+
+
+        .kendo-table-outter td, .k-grid-content td {
+            white-space: nowrap;
+        }
+
+
+    .k-filter-row .k-dropdown-operator {
+        right: 0;
+    }
+
+
+    .k-filtercell > span {
+        padding-right: 2.7em !important;
+        width: 100% !important;
+    }
+
+    .k-filter-row .k-dropdown-operator {
+        right: 0;
+    }
+
+    .k-filtercell > span {
+        padding-right: 2.7em !important;
+        width: 100% !important;
+    }
+</style>*@
+<section class="content-header clearfix">
+    <h1 class="pull-left">
+        Sipariş
+        <small>Kargo Takip Numarası Listesi</small>
+    </h1>
+
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                Erp Firmalar
+                            </div>
+                            <div class="panel-body">
+                                <select class="form-control" id="capiFirms" asp-items="@(new SelectList(Model.Firms,"FirmNo","FirmName"))">
+                                    <option>--Seçiniz--</option>
+                                </select>
+                            </div>
+                            <div class="panel-footer">
+                                <button type="button" id="allOrderTrackingNumbers"><span class="glyphicon glyphicon-refresh"></span> Getir </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <button class="btn btn-primary" id="btnUpdateOrderTrackingNumber"> <span class="glyphicon glyphicon-refresh"></span> Takip Numarası Güncelle </button>
+                            </div>
+                            <div class="panel-body">
+                                <div id="allOrdersTrackingNumberGrid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="viewContent">
+</div>
+
+<script>
+    var currentSelectedFirm = 0;
+
+    var allOrderFromServer = function () {
+
+        var grid = $("#allOrdersTrackingNumberGrid");
+        debugger;
+        //destroy all data
+        var gridData = grid.data("kendoGrid");
+        if (gridData != undefined) {
+            gridData.destroy();
+        }
+        // get selected firm
+        var selectedFirm = $("#capiFirms").val();
+        if (selectedFirm == "") {
+            alert("Firma Seçimi Yapmadınız");
+            return;
+        }
+        // currentSelected Firm
+        currentSelectedFirm = selectedFirm;
+        // call all order from api
+        grid.kendoGrid({
+            toolbar: ["excel"],
+            excel: {
+                fileName: "OrderTrackingNumbers.xlsx",
+                filterable: true,
+                allPages: true
+            },
+            dataSource: {
+                transport: {
+                    read: {
+                        url: "/pms/order/order-tracking-number-list-by-filter/" + selectedFirm,
+                        dataType: "json",
+                        type: "POST"
+                    }
+                },
+                schema: {
+                    total: "total", // total is returned in the "total" field of the response
+                    data: "data", // records are returned in the "data" field of the response
+                    model: {
+                        id: "id"
+                    }
+                },
+                pageSize: 100,
+                serverPaging: true,
+                serverFiltering: true,
+                serverSorting: true
+            },
+            height: 650,
+            filterable: {
+                mode: "row"
+            },
+            sortable: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            resizable: true,
+            columns: [
+                { field: "orderNo", title: "Sipariş No", filterable: true },
+                { field: "trackingNumber", title: "Kargo Takip Numarası", filterable: true },
+                { field: "code", title: "SKU" , filterable: true},
+                { field: "cargoFirm", title: "Kargo Firması" , filterable: true},
+                { field: "createDate", title: "Logodan Alınma Tarihi", template: '#= kendo.toString(kendo.parseDate(createDate), "dd/MM/yyyy HH.mm.ss")#' }
+            ]
+        });
+    }
+    var getTrackingNumberFromServer = function () {
+
+        var loader = $("#cover-spin");
+        var selectedId = $("#capiFirms").val();
+
+        $.ajax({
+            url: "/pms/order/update-tracking-numbers/" + selectedId,
+            type: "GET",
+            dataType: "json",
+            beforeSend: function () {
+                loader.show();
+            },
+            success: function (response) {
+                if (response.status && selectedId != "") {
+                    allOrderFromServer();
+                } else {
+                    alert(response.message);
+                }
+            },
+            complete: function () {
+                loader.hide();
+            },
+            error: function (response) {
+                alert(response);
+            }
+        })
+    }
+    $(function () {
+
+        //  all order data from server
+        $("#allOrderTrackingNumbers").on("click", function () {
+            allOrderFromServer();
+        });
+
+        // update order tracking from server
+        $("#btnUpdateOrderTrackingNumber").on("click", function () {
+            getTrackingNumberFromServer();
+        })
+    });
+</script>
+

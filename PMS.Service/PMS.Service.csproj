@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PMS.Data\PMS.Data.csproj" />
+    <ProjectReference Include="..\PMS.Mapping\PMS.Mapping.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="4.9.4" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="4.8.5" />
+  </ItemGroup>
+
+</Project>

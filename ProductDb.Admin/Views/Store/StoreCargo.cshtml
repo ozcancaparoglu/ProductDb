@@ -1,0 +1,107 @@
+﻿@model CargoModel
+@inject CustomLocalizer localizer
+@inject IStoreService storeService
+
+@{
+    var store = storeService.StoreById(ViewBag.StoreId);
+    var storeName = store != null ? store.Name : string.Empty;
+}
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title"><b> @storeName </b>  Cargo Prices</h3>
+            </div>
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div id="grid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+    $(function () {
+
+
+          var crudServiceBaseUrl = "/@localizer.CurrentLanguage/store";
+          var storeId = "@ViewBag.StoreId";
+
+
+
+        var refeshGrid = function () {
+
+            $("#grid").empty();
+            grid = $("#grid");
+
+            dataSource = new kendo.data.DataSource({
+                            transport: {
+                                read:  {
+                                    url: crudServiceBaseUrl + "/StoreCargoByStoreId/" + storeId,
+                                    dataType: "json",
+                                    type: "GET"
+                                },
+                                update: {
+                                    url: crudServiceBaseUrl + "/UpdateCargo",
+                                    dataType: "json",
+                                    type: "POST"
+                                },
+                                destroy: {
+                                    url: crudServiceBaseUrl + "/DeleteCargo",
+                                    dataType: "json",
+                                    type: "POST"
+                                },
+                                create: {
+                                    url: crudServiceBaseUrl + "/CreateCargo",
+                                    dataType: "json",
+                                    type: "POST"
+                                }
+                             },
+                             requestEnd: function(e) {
+                                if (e.type == "create" || e.type == "update" || e.type == "destroy") {
+                                    //check for errors in the response
+                                    if (e.response == null || e.response.Errors == null) {
+                                        refeshGrid()
+                                    }
+                                }
+                            },
+                            pageSize: 100,
+                            schema: {
+                                model: {
+                                    id: "id",
+                                    fields: {
+                                        "id": { editable: false, nullable: true },
+                                        "storeId": { editable: false, defaultValue: "@ViewBag.StoreId"},
+                                        "minDesi": {editable: true, type: "number", validation: { required: false, min: 0 } },
+                                        "maxDesi": { editable: true, type: "number", validation: { required: false, min: 0 } },
+                                        "value": { editable: true, type: "number", validation: { required: false, min: 0 } },
+                                        "isLastDesi": { type: "boolean", editable: true },
+                                    }
+                                }
+                            }
+             });
+             grid.kendoGrid({
+                 dataSource: dataSource,
+                 pageable: true,
+                 sortable: true,
+                 height: 650,
+                 toolbar: ["create"],
+                 columns: [
+                 //{ field: "id", title: "Id" },
+                 { field: "minDesi", title: "Min Desi", filterable: false },
+                 { field: "maxDesi", title: "Max Desi", filterable: false },
+                 { field: "value", title: "Price", filterable: false },
+                 { field: "isLastDesi", title: "Is Last Desi", filterable: false },
+                 { command: ["edit", "destroy"], title: "&nbsp;", width: "250px" }],
+                 editable: "inline"
+             });
+        }
+
+        refeshGrid();
+    })
+</script>

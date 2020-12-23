@@ -1,0 +1,56 @@
+﻿@inject CustomLocalizer localizer
+@model AttributesModel
+@using (Html.BeginForm("Create", "Attributes", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.HiddenFor(model => model.ProcessedBy)
+    <!-- Content Header (Page header) -->
+    <section class="content-header clearfix">
+        <h1 class="pull-left">
+            @localizer["Attributes"]
+            <small>@localizer["Create"]</small>
+        </h1>
+
+        <div class="pull-right">
+            <button type="submit" name="save" class="btn bg-blue">
+                <i class="fa fa-floppy-o"></i>
+                @localizer["Save"]
+            </button>
+            <a href="/@localizer.CurrentLanguage/attributes/list" class="btn bg-red">
+                <i class="fa fa-ban"></i>
+                @localizer["Cancel"]
+            </a>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">@localizer["AddNewAttributes"]</h3>
+                </div>
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    @localizer["GeneralInformation"]
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label for="attributesName">@localizer["Name"]</label>
+                                        @Html.TextBoxFor(model => model.Name, new { @class = "form-control", placeholder = "Enter attribute name" })
+                                        <br />
+                                        <label>
+                                            @Html.CheckBoxFor(model => model.IsRequired, new { @class = "minimal" })@localizer["IsRequired"] 
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+

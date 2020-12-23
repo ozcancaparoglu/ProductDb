@@ -1,0 +1,162 @@
+﻿@inject CustomLocalizer localizer
+@model AllProductViewModel
+
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+
+<section class="content-header clearfix">
+    <h1 class="pull-left">
+        @localizer["Product"]
+        <small>@localizer["List"]</small>
+    </h1>
+</section>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-md-1">
+                @localizer["Language"] :
+            </div>
+            <div class="col-md-10">
+                <div class="col-md-3">
+                    <select asp-for="languageId" asp-items="@(new SelectList(Model.languages,"Id","Name"))" style="width:250px">
+                        <option value="">@localizer["Select"]</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" id="productList" class="btn btn-primary"><span class="glyphicon glyphicon-refresh"></span> @localizer["List"] </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                @localizer["Product"] @localizer["List"]
+                            </div>
+                            <div class="panel-body">
+                                <div id="allProductList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    $(function () {
+
+        var language = $("#languageId");
+        var allProductList = $("#allProductList");
+        var loading = $("#cover-spin");
+
+        language.kendoComboBox({
+            filter: "contains",
+            suggest: true,
+            index: 3
+        });
+
+        var getProducts = function (id) {
+
+            var grid = allProductList.data("kendoGrid");
+            if (grid != undefined) {
+                grid.destroy();
+            }
+
+            allProductList.kendoGrid({
+                toolbar: ["excel"],
+                excel: {
+                    filterable: true
+                },
+                excelExport: function(e) {
+                    e.workbook.fileName = "ProductList.xlsx";
+                },
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "/@localizer.CurrentLanguage/products/allproduct-list/" + id,
+                            dataType: "json",
+                            type: "POST"
+                        }
+                    },
+                    schema: {
+                        total: "total", // total is returned in the "total" field of the response
+                        data: "data", // records are returned in the "data" field of the response
+                        model: {
+                            id: "id"
+                        }
+                    },
+                    pageSize: 500,
+                    serverPaging: true,
+                    serverFiltering: true,
+                    serverSorting: true
+                },
+                height: 850,
+                filterable: {
+                    mode: "row"
+                },
+                sortable: true,
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 5
+                },
+                resizable: true,
+                columns: [
+                    { field: "sku", title: "@localizer["Sku"]" },
+                    { hidden: true, field: "barcode", title: "@localizer["Barcode"]" },
+                    { field: "title", title: "@localizer["Title"]" },
+                    { field: "category", title: "@localizer["Category"]" },
+                    { hidden: true, field: "shortDescription", title: "@localizer["ShortDescription"]" },
+                    { hidden: true, field: "description", title: "@localizer["Description"]" },
+                    { field: "brndName", title: "@localizer["Brand"]" },
+                    { field: "buyingPrice", title: "@localizer["BuyingPrice"]" },
+                    { field: "currName", title: "@localizer["Currency"]", filterable: false },
+                    { field: "psfPrice", title: "@localizer["MarketPrice"]"},
+                    { field: "psfCurrName", title: "@localizer["Currency"]", filterable: false }
+                ]
+            });
+
+            var exportFlag = false;
+            $("#allProductList").data("kendoGrid").bind("excelExport", function (e) {
+                var columns = e.sender.columns;
+                var excelColumns = new Array();
+                if (!exportFlag) {
+                    for (var i = 0; i < columns.length; i++) {
+                        if (columns[i].hidden) {
+                            e.sender.showColumn(i);
+                            excelColumns.push(i);
+                        }
+                    }
+                    e.preventDefault();
+                    exportFlag = true;
+                    setTimeout(function () {
+                        e.sender.saveAsExcel();
+                    });
+                }
+                else
+                {
+                    e.sender.hideColumn(1);
+                    e.sender.hideColumn(4);
+                    e.sender.hideColumn(5);
+                    exportFlag = false;
+                }
+            });
+        }
+
+        $("#productList").click(function () {
+            var id = language.val();
+            loading.show();
+            getProducts(id);
+            loading.hide();
+        });
+    });
+</script>
+

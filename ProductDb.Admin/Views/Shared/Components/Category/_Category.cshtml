@@ -1,0 +1,119 @@
+﻿@inject CustomLocalizer localizer
+@model ProductDockCategoryViewModel
+
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+
+
+<div class="modal fade" id="modal-category" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div id="Message" style="display:none" role="alert">
+                </div>
+
+                <!-- Content Header (Page header) -->
+                <section class="content-header clearfix">
+                    <h1 class="pull-left">
+                        <small>@localizer["Select"] @localizer["Category"]</small>
+                    </h1>
+
+                    <div class="pull-right">
+                        <button type="submit" name="save" class="btn bg-blue">
+                            <i class="fa fa-save"></i>
+                            @localizer["Save"]
+                        </button>
+                        <a href="#" class="btn bg-red" data-dismiss="modal">
+                            <i class="fa fa-ban"></i>
+                            @localizer["Cancel"]
+                        </a>
+                    </div>
+                </section>
+                <div class="row">
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">
+                            </h3>
+                        </div>
+                        <div class="box-body">
+                            @Html.DropDownListFor(model => model.CategoryId, new SelectList(Model.Categories, "Id", "CategoryNameWithParents"),
+                           "Select", new { @class = "form-control", style = "width: 550px;" })
+                        </div>
+                    </div>
+                </div>
+                @*<section class="content">
+                    </section>*@
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script>
+
+    $(function () {
+
+        $("#CategoryId").kendoComboBox({
+                        filter: "contains",
+                        suggest: true,
+                        index: 3
+                   });
+
+        $("button[type=submit]").on("click", function (e) {
+
+            e.preventDefault();
+            // loading
+            var loading = $("#cover-spin");
+            // message title
+            var boxtitle = $(".box-title");
+
+            // posted datas
+            var selecetedCatId = $("#CategoryId").val();
+            var productDockCategoryId = "@Model.ProductDockCategoryId";
+            var supplierId = "@Model.SupplierId";
+
+            // validation
+            var validationMessage = "";
+            validationMessage += supplierId == "" ? "Suplier Not Selected.\n" : "";
+            validationMessage += selecetedCatId == "" ? "Category Not Selected.\n" : "";
+
+            if (validationMessage != "") {
+                boxtitle.html(validationMessage);
+                boxtitle.addClass("text-danger");
+                return;
+            }
+            // remove error message
+            boxtitle.removeClass("text-danger");
+            // ajax post
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/product-dock/saveallproductdock",
+                data: { selecetedCatId: selecetedCatId,productDockCategoryId: productDockCategoryId, supplierId: supplierId },
+                type: "POST",
+                dataType: "json",
+                cache: false,
+                async: true,
+                beforeSend: function () {
+                    loading.show();
+                },
+                success: function (response) {
+                    // server result
+                    boxtitle.html(response.message);
+                    if (response.status) {
+                        boxtitle.addClass("alert alert-success");
+                    } else {
+                        boxtitle.addClass("text-danger");
+                    }
+                },
+                error: function (response) {
+                    console.log(response.responseText);
+                },
+                complete: function () {
+                    loading.hide();
+                }
+            })
+
+        })
+
+    })
+</script>

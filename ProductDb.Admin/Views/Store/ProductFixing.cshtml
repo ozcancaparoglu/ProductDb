@@ -1,0 +1,270 @@
+﻿@inject CustomLocalizer localizer
+@model StoreProductViewModel
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+<style>
+    .k-grid .k-grid-header .k-header .k-link {
+    height: auto;
+}
+​
+.k-grid .k-grid-header .k-header {
+    white-space: normal;
+    font-weight: bold !important;
+}
+​
+.kendo-table-outter {
+    overflow-x: auto;
+}
+​
+    .kendo-table-outter td,.k-grid-content td {
+        white-space: nowrap;
+    }
+​
+.k-filter-row .k-dropdown-operator {
+    right: 0;
+}
+​
+.k-filtercell > span {
+    padding-right: 2.7em !important;
+    width: 100% !important;
+}
+
+.k-filter-row .k-dropdown-operator {
+    right: 0;
+}
+.k-filtercell > span {
+    padding-right: 2.7em !important;
+    width: 100% !important;
+}
+
+</style>
+<form method="post" id="ExcelFixing" action="/@localizer.CurrentLanguage/import/ProductFixingImport" enctype="multipart/form-data">
+    <section class="content">
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">@localizer["Search"] @localizer["Store"] @localizer["Products"]</h3>
+                </div>
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    @localizer["Search"] @localizer["Products"]
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label>@localizer["Stores"] </label>
+                                        @Html.DropDownListFor(model => model.StoreId, new SelectList(Model.Stores, "Id", "Name"), localizer["Select"], new { @class = "form-control select2" })
+                                    </div>
+                                </div>
+
+                                <div class="panel-footer">
+                                    <button type="button" name="StoreProducts" id="StoreProducts" class="btn bg-blue">
+                                        <i class="fa fa-search"></i>
+                                        @localizer["Search"]
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="panel panel-default">
+
+                                <div class="panel-heading">
+                                    @localizer["Excel"] @localizer["Import"]
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <input asp-for="file" class="form-control" />
+                                        <span asp-validation-for="file" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="panel-footer">
+                                    <input type="submit" class="btn btn-default" value="@localizer["Upload"]" />
+                                    @if (Model.message != string.Empty)
+                                    {
+                                        <label class="text-danger">@Model.message</label>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+</form>
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title">Store Products</h3>
+            </div>
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div id="gridStoreProducts"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="ModalContent"></div>
+
+<!-- Page script -->
+<script>
+    $(function () {
+
+         var ModalContent = $("#ModalContent");
+         var loading = $("#cover-spin");
+         var grid = $("#gridStoreProducts");
+
+         var getStoreProducts = function (selected) {
+
+             var crudServiceBaseUrl = "/@localizer.CurrentLanguage/store";
+             var kendoData = grid.data("kendoGrid");
+
+             if (kendoData!= undefined) {
+                kendoData.destroy();
+             }
+
+             dataSource = new kendo.data.DataSource({
+                            transport: {
+                                read:  {
+                                    url: crudServiceBaseUrl + "/StoreProdocuts/" + selected,
+                                    dataType: "json",
+                                    type: "GET"
+                                },
+                                update: {
+                                    url: crudServiceBaseUrl + "/StoreProduct-Update",
+                                    dataType: "json",
+                                    type: "POST"
+                                }
+                            },
+                            pageSize: 100,
+                            schema: {
+                                model: {
+                                    id: "id",
+                                    fields: {
+                                        id: { editable: false, nullable: true },
+                                        "product.sku": { editable: false },
+                                        "categoryWithParents": { editable: false },
+                                        "product.title": { editable: false },
+                                        "parentProductSku": { editable: false },
+                                        //"stock": { editable: false },
+                                        "price": { editable: true, type: "number", validation: { required: false, min: 0 } },
+                                        "catalogName": { editable: true },
+                                        "catalogCode": { editable: true },
+                                        "point": { editable: true,type: "number", validation: { required: false, min: 0 } },
+                                        "erpPrice": { editable: true, type: "number", validation: { required: false, min: 0 } },
+                                        "isFixed": { type: "boolean", editable: true },
+                                        "erpPoint": { editable: true, type: "number", validation: { required: false, min: 0 } },
+                                        "isFixedPoint": { type: "boolean", editable: true },
+                                        "vatValue": { editable: true },
+                                    }
+                                }
+                            }
+             });
+             grid.kendoGrid({
+                 dataSource: dataSource,
+                 toolbar: ["excel"],
+                 excel: {
+                    filterable: true,
+                    allPages: true
+                 },
+                 excelExport: function(e) {
+                    e.workbook.fileName = "ProductFixingList.xlsx";
+                 },
+                 pageable: true,
+                 height: 900,
+                 reorderable: true,
+                 resizable: true,
+                 filterable: {
+                     mode: "row"
+                 },
+                 columns: [
+                 { field: "id", title: "MapId" },
+                 { field: "product.sku", title: "Sku" , width:"130px" },
+                 { field: "categoryWithParents", title: "Parent Category" },
+                 //{ field: "storeCategory", title: "Store Category" },
+                 { field: "product.title", title: "Title" },
+                 { field: "parentProductSku", title: "Parent Product Sku" },
+                 //{ field: "stock", title: "Stok" },
+                 { field: "price", title: "Price" },
+                 { field: "isFixed", title: "Is Fixed?", editor: customBoolEditor },
+                 { field: "point", title: "Point" },
+                 { field: "isFixedPoint", title: "Is Point Fixed", editor: customBoolEditorPointFixing },
+                 { field: "erpPrice", title: "Erp Price" },
+                 { field: "erpPoint", title: "Erp Point" },
+                 { field: "catalogCode", title: "Catalog Code" },
+                 { field: "catalogName", title: "Catalog Name" },
+                 { field: "vatValue", title: "Vat Value" },
+                 { command: ["edit"], title: "&nbsp;", width: "250px" } ],
+                 editable: "inline"
+             });
+
+            var exportFlag = false;
+            grid.data("kendoGrid").bind("excelExport", function (e) {
+                if (!exportFlag) {
+
+                    e.sender.hideColumn(2);
+                    e.sender.hideColumn(3);
+                    e.sender.hideColumn(4);
+
+                    e.preventDefault();
+                    exportFlag = true;
+                    setTimeout(function () {
+                        e.sender.saveAsExcel();
+                    });
+                }
+                else
+                {
+                    e.sender.showColumn(2);
+                    e.sender.showColumn(3);
+                    e.sender.showColumn(4);
+                    exportFlag = false;
+                }
+            });
+
+
+
+         }
+
+        $("#StoreProducts").on("click", function () {
+            debugger;
+            var selectedId = $("#@Html.IdFor(model => model.StoreId)").val();
+            if (selectedId == "" || selectedId == undefined) {
+                alert("Seçim Yapmadınız");
+                return;
+            }
+            getStoreProducts(selectedId);
+        });
+        // after post form refres store products
+        @if (Model.isUploaded)
+        {
+            @: getStoreProducts($("#@Html.IdFor(model => model.StoreId)").val())
+        }
+
+        $('.select2').select2();
+
+        $("#ExcelFixing").submit(function () {
+            $("#cover-spin").show();
+        })
+
+    });
+
+    function customBoolEditor(container, options) {
+                    var guid = kendo.guid();
+                    $('<input class="k-checkbox" id="' + guid + '" type="checkbox" name="isFixed" data-type="boolean" data-bind="checked:isFixed">').appendTo(container);
+                    $('<label class="k-checkbox-label" for="' + guid + '">&#8203;</label>').appendTo(container);
+    }
+     function customBoolEditorPointFixing(container, options) {
+                    var guid = kendo.guid();
+                    $('<input class="k-checkbox" id="' + guid + '" type="checkbox" name="isFixedPoint" data-type="boolean" data-bind="checked:isFixedPoint">').appendTo(container);
+                    $('<label class="k-checkbox-label" for="' + guid + '">&#8203;</label>').appendTo(container);
+    }
+</script>

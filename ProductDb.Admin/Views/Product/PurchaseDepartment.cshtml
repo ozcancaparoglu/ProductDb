@@ -1,0 +1,142 @@
+﻿@inject CustomLocalizer localizer
+
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+
+<section class="content-header clearfix">
+    <h1 class="pull-left">
+        @localizer["Product"]
+        <small>@localizer["List"]</small>
+    </h1>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                @localizer["Product"] @localizer["List"]
+                            </div>
+                            <div class="panel-body">
+                                <div id="allProductListPurchase"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    $(function () {
+        var allProductList = $("#allProductListPurchase");
+        var loading = $("#cover-spin");
+
+        var getProducts = function () {
+
+            var grid = allProductList.data("kendoGrid");
+            if (grid != undefined) {
+                grid.destroy();
+            }
+
+            allProductList.kendoGrid({
+                toolbar: ["excel"],
+                excel: {
+                    filterable: true,
+                    allPages: true
+                },
+                excelExport: function(e) {
+                    e.workbook.fileName = "ProductListPurchase.xlsx";
+                },
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "/@localizer.CurrentLanguage/products/get-all-products/",
+                            dataType: "json",
+                            type: "POST"
+                        }
+                    },
+                    schema: {
+                        total: "total", // total is returned in the "total" field of the response
+                        data: "data", // records are returned in the "data" field of the response
+                        model: {
+                            id: "id"
+                        }
+                    },
+                    pageSize: 500,
+                    serverPaging: true,
+                    serverFiltering: true,
+                    serverSorting: true
+                },
+                height: 1000,
+                filterable: {
+                    mode: "row"
+                },
+                groupable: true,
+                sortable: true,
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 5
+                },
+                resizable: true,
+
+                columns: [
+                    { field: "sku", title: "@localizer["Sku"]", width: 75 },
+                    { field: "barcode", title: "@localizer["Barcode"]", width:50 },
+                    { field: "name", title: "@localizer["Name"]", width: 150 },
+                    { field: "buyingPrice", title: "@localizer["BuyingPrice"]", filterable: false, width: 30 },
+                    { field: "currName", title: "@localizer["Currency"]", filterable: false, width: 30 },
+                    { field: "psfPrice", title: "@localizer["MarketPrice"]", filterable: false, width: 30 },
+                    { field: "psfCurrName", title: "@localizer["Currency"]", filterable: false, width: 30 },
+                    { field: "corporatePrice", title: "@localizer["CorporatePrice"]", filterable: false, width: 30 },
+                    { field: "corCurrName", title: "@localizer["Currency"]", filterable: false, width: 30 },
+                    { field: "ddpPrice", title: "@localizer["DdpPrice"]", filterable: false, width: 30 },
+                    { field: "fobPrice", title: "@localizer["FobPrice"]", filterable: false, width: 30 },
+                    { field: "ddpCurrName", title: "@localizer["Currency"]", filterable: false, width: 30 },
+                    { field: "vatRateAmount", title: "@localizer["VatRate"]", filterable:false, width:30}
+                ]
+            });
+
+            var exportFlag = false;
+            allProductList.data("kendoGrid").bind("excelExport", function (e) {
+                loading.show();
+
+                var columns = e.sender.columns;
+                var excelColumns = new Array();
+                if (!exportFlag) {
+                    for (var i = 0; i < columns.length; i++) {
+                        if (columns[i].hidden) {
+                            e.sender.showColumn(i);
+                            excelColumns.push(i);
+                        }
+                    }
+                    e.preventDefault();
+
+                    exportFlag = true;
+
+                    setTimeout(function () {
+                        e.sender.saveAsExcel();
+                    });
+                }
+                else
+                {
+                    getProducts();
+                }
+                loading.hide();
+            });
+        }
+
+        loading.show();
+        getProducts();
+        loading.hide();
+
+    });
+
+
+
+</script>

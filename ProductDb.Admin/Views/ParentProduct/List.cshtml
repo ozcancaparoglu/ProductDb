@@ -1,0 +1,157 @@
+﻿@inject CustomLocalizer localizer
+@*@model List<ParentProductModel>*@
+
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+
+<!-- Content Header (Page header) -->
+<section class="content-header clearfix">
+    <h1 class="pull-left">
+        @localizer["Parent"] @localizer["Products"]
+        <small>@localizer["List"]</small>
+    </h1>
+
+    <div class="pull-right">
+        <a href="/@localizer.CurrentLanguage/parent-products/create" class="btn bg-blue">
+            <i class="fa fa-plus"></i>
+            @localizer["AddNew"]
+        </a>
+        <button id="btnClearCache" class="btn btn-default"> @localizer["Cache"] @localizer["Clear"] </button>
+    </div>
+</section>
+
+
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                @localizer["ParentProduct"] @localizer["List"]
+                            </div>
+                            <div class="panel-body">
+                                <div id="allParentProductListOrdered"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script id="editProduct" type="text/x-kendo-tmpl">
+
+    #for (var i = 0; i < data.products.length; i++){#
+    <a target="_blank" href="/@localizer.CurrentLanguage/products/edit/#:data.products[i].id#" class="btn btn-default">
+        #= data.products[i].sku #
+    </a>
+    #}#
+
+</script>
+
+<script id="editParentProduct" type="text/x-kendo-tmpl">
+    <a href="/@localizer.CurrentLanguage/parent-products/edit/#:data.id#" class="btn btn-default">
+        <i class="fa fa-edit"></i> Edit
+    </a>
+</script>
+
+<script id="deleteParentProduct" type="text/x-kendo-tmpl">
+    <a href="/@localizer.CurrentLanguage/parent-products/delete/#:data.id#">
+        <i class="fa fa-close"></i> Delete
+    </a>
+</script>
+
+<script>
+    $(function () {
+
+        var allParentProductList = $("#allParentProductListOrdered");
+        var loading = $("#cover-spin");
+
+        var getParentProducts = function () {
+
+            var grid = allParentProductList.data("kendoGrid");
+            if (grid != undefined) {
+                grid.destroy();
+            }
+
+            allParentProductList.kendoGrid({
+                toolbar: ["excel"],
+                excel: {
+                    filterable: true,
+                    allPages: true
+                },
+                excelExport: function (e) {
+                    e.workbook.fileName = "ParentProductListOrdered.xlsx";
+                },
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "/@localizer.CurrentLanguage/parent-products/get-all-parent-products/@ViewBag.CategoryId",
+                            dataType: "json",
+                            type: "POST"
+                        }
+                    },
+                    schema: {
+                        total: "total", // total is returned in the "total" field of the response
+                        data: "data", // records are returned in the "data" field of the response
+                        model: {
+                            id: "id"
+                        }
+                    },
+                    pageSize: 500,
+                    serverPaging: true,
+                    serverFiltering: true,
+                    serverSorting: true
+                },
+                height: 1000,
+                filterable: {
+                    mode: "row"
+                },
+                groupable: true,
+                sortable: true,
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 5
+                },
+                resizable: true,
+
+                columns: [
+                    { field: "sku", title: "@localizer["Sku"]", width: 90 },
+                    { field: "title", title: "@localizer["Name"]", width: 250 },
+                    { field: "", title: "@localizer["Products"]", template: kendo.template($("#editProduct").html()), width: 200 },
+                    { field: "", title: "@localizer["Edit"]", template: kendo.template($("#editParentProduct").html()), width: 50 },
+                    { field: "", title: "@localizer["Delete"]", template: kendo.template($("#deleteParentProduct").html()), width: 50}
+                ]
+            });
+
+        }
+
+        loading.show();
+        getParentProducts();
+        loading.hide();
+
+
+        $("#btnClearCache").on("click", function () {
+            $.ajax({
+                url: "/pms/cache/ClearCache",
+                type: "POST",
+                dataType: "json",
+                data: { key: "parentProductListKey" },
+                success: function (response) {
+                    location.reload();
+                },
+                error: function (response) {
+                    console.log(response.responseText);
+                }
+            })
+
+        });
+
+    });
+
+</script>
+

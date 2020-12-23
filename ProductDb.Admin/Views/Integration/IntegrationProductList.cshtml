@@ -1,0 +1,231 @@
+﻿@inject CustomLocalizer localizer
+@model IEnumerable<ProductDb.Common.GlobalEntity.IntegrationList>
+
+@{
+    ViewData["Title"] = "IntegrationProductList";
+}
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">
+        <p>@ViewBag.Error</p>
+    </div>
+}
+
+<section class="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>@localizer["Integration"] @localizer["Filter"]</h3>
+                </div>
+                <div class="panel-body">
+                    <form asp-action="list" asp-controller="integration">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>@localizer["Store"] @localizer["Name"]</label>
+                                <select asp-items="@ViewBag.Stores" class="form-control" id="stores" name="store"></select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Integration @localizer["Name"]</label>
+                                <select asp-items="@ViewBag.Integration" class="form-control" id="integration" name="integration"></select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>@localizer["Language"]</label>
+                                <select asp-items="@ViewBag.Language" class="form-control" id="integration" name="language"></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>@localizer["Brand"]</label>
+                            <select class="form-control" asp-items="@ViewBag.Brand" id="brand" name="brand"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>@localizer["Category"]</label>
+                            <select class="form-control" asp-items="@ViewBag.Category" id="category" name="category"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Sku</label>
+                            <input type="text" class="form-control" name="sku" />
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-primary">@localizer["Show"]</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    @if (ViewBag.Url != null)
+    {
+        <div class="alert-link">
+            <h3>@ViewBag.Url</h3>
+        </div>
+    }
+    @if (ViewBag.List != null)
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3>@localizer["Integration"] @localizer["List"]</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row" style="margin-bottom:10px;">
+                            <div id="LoadingImage" style="display: none ; text-align:center; ">
+                                <img style="max-width:100px;max-height:100px;" src="~/Uploads/Gif/Loading.gif" />
+                            </div>
+                            <div class="pull-right">
+                                <input type="hidden" id="storeval" name="storeval" value="@ViewBag.Storesval" />
+                                <input type="hidden" id="brandval" name="brandval" value="@ViewBag.Brandval" />
+                                <input type="hidden" id="integrationval" name="integrationval" value="@ViewBag.Integrationval" />
+                                <input type="hidden" id="categoryval" name="categoryval" value="@ViewBag.Categoryval" />
+                                <input type="hidden" id="languageval" name="languageval" value="@ViewBag.Languageval" />
+                                <input type="hidden" id="skuval" name="sku" value="@ViewBag.Sku" />
+                                @if (ViewBag.Sku != null)
+                                {
+                                    <a class="btn btn-primary" href="~/@localizer.CurrentLanguage/integration/update-all-store/@ViewBag.Sku/@ViewBag.Brandval/@ViewBag.Categoryval/@ViewBag.Storesval/@ViewBag.Integrationval/@ViewBag.Languageval">@localizer["Update"] @localizer["All"]</a>
+                                    <a class="btn btn-primary" href="~/@localizer.CurrentLanguage/integration/push-all-product/@ViewBag.Sku/@ViewBag.Brandval/@ViewBag.Categoryval/@ViewBag.Storesval/@ViewBag.Integrationval/@ViewBag.Languageval">@localizer["Push"] @localizer["All"] @localizer["Standard"] @localizer["Product"]</a>
+                                    <a class="btn btn-primary" href="~/@localizer.CurrentLanguage/integration/push-all-parent-child-product/@ViewBag.Sku/@ViewBag.Brandval/@ViewBag.Categoryval/@ViewBag.Storesval/@ViewBag.Integrationval/@ViewBag.Languageval">@localizer["Push"] @localizer["All"] @localizer["Parent"]/@localizer["Child"] @localizer["Product"]</a>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-primary" href="~/@localizer.CurrentLanguage/integration/update-all-store/default/@ViewBag.Brandval/@ViewBag.Categoryval/@ViewBag.Storesval/@ViewBag.Integrationval/@ViewBag.Languageval">@localizer["Update"] @localizer["All"]</a>
+                                    <a class="btn btn-primary" href="~/@localizer.CurrentLanguage/integration/push-all-product/default/@ViewBag.Brandval/@ViewBag.Categoryval/@ViewBag.Storesval/@ViewBag.Integrationval/@ViewBag.Languageval">@localizer["Push"] @localizer["All"] @localizer["Standard"] @localizer["Product"]</a>
+                                    <a class="btn btn-primary" href="~/@localizer.CurrentLanguage/integration/push-all-parent-child-product/default/@ViewBag.Brandval/@ViewBag.Categoryval/@ViewBag.Storesval/@ViewBag.Integrationval/@ViewBag.Languageval">@localizer["Push"] @localizer["All"] @localizer["Parent"]/@localizer["Child"] @localizer["Product"]</a>
+                                }
+                            </div>
+                        </div>
+                        <table id="integrationProductList" class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>@localizer["Picture"]</th>
+                                    <th>Sku</th>
+                                    <th>@localizer["Title"]</th>
+                                    <th>@localizer["Update"]</th>
+                                    <th>@localizer["Push"]</th>
+                                </tr>
+                            </thead>
+                            @foreach (var item in Model)
+                            {
+                                <tbody>
+                                    <tr>
+                                        <td><img src="@item.PictureUrl" height="100" width="100" /></td>
+                                        <td>@item.Sku</td>
+                                        <td>@item.Title</td>
+                                        <td><a class="btn btn-primary update-product-btn" data-storeid="@item.StoreId" data-storeproductid="@item.StoreProductId" data-productid="@item.ProductId"> @localizer["Update"]</a></td>
+                                        <td style="width:250px;"><a class="btn btn-primary push-product-btn" data-storeid="@item.StoreId" data-storeproductid="@item.StoreProductId" data-productid="@item.ProductId"> @localizer["Push"] @localizer["Product"]</a><a class="btn btn-primary push-product-pc-btn" data-storeid="@item.StoreId" data-storeproductid="@item.StoreProductId" data-productid="@item.ProductId" style="margin-top:5px;"> @localizer["Push"] @localizer["Parent"] @localizer["Child"] @localizer["Product"]</a></td>
+                                    </tr>
+                                </tbody>
+                            }
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</section>
+
+<script>
+    $(document).ready(function () {
+        $('#stores').select2();
+        $('#brand').select2();
+        $('#category').select2();
+        $('#integration').select2();
+
+        $('#integrationProductList').DataTable({
+            'paging': true,
+            'lengthChange': true,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            'pageLength': 100
+        });
+    });
+
+    $(document).ready(function () {
+        $('#integrationProductList tbody').on('click', '.update-product-btn', function () {
+            $("#LoadingImage").show();
+            var storeId = $(this).data("storeid");
+            var storeProductId = $(this).data("storeproductid");
+            var productId = $(this).data("productid");
+            var languageId = $("#languageval").val();
+            var integrationId = $("#integrationval").val();
+            var url = "/@localizer.CurrentLanguage/integration/update-single-product";
+            $.ajax({
+                url: url,
+                data: { storeId: storeId, storeProductId: storeProductId, productId: productId, integrationId: integrationId, languageId: languageId },
+                cache: false,
+                type: "POST",
+                success: function (data) {
+                    $("#LoadingImage").hide();
+                    if (data == 1) {
+                        alert("İşlem Başarılı")
+                    }
+                    else {
+                        alert("Hata!! İşlem Yapılamadı");
+                    }
+                }
+            });
+        });
+    });
+
+
+    $(document).ready(function () {
+        $('#integrationProductList tbody').on('click', '.push-product-btn', function () {
+            $("#LoadingImage").show();
+            var storeId = $(this).data("storeid");
+            var storeProductId = $(this).data("storeproductid");
+            var productId = $(this).data("productid");
+            var languageId = $("#languageval").val();
+            var integrationId = $("#integrationval").val();
+            var url = "/@localizer.CurrentLanguage/integration/push-single-product";
+            $.ajax({
+                url: url,
+                data: { storeId: storeId, storeProductId: storeProductId, productId: productId, integrationId: integrationId, languageId: languageId },
+                cache: false,
+                type: "POST",
+                success: function (data) {
+                    $("#LoadingImage").hide();
+                    if (data == 1) {
+                        alert("İşlem Başarılı")
+                    }
+                    else {
+                        alert("Hata!! İşlem Yapılamadı");
+                    }
+                }
+            });
+        });
+    });
+
+    $(document).ready(function () {
+        $('#integrationProductList tbody').on('click', '.push-product-pc-btn', function () {
+            $("#LoadingImage").show();
+            var storeId = $(this).data("storeid");
+            var storeProductId = $(this).data("storeproductid");
+            var productId = $(this).data("productid");
+            var languageId = $("#languageval").val();
+            var integrationId = $("#integrationval").val();
+            var url = "/@localizer.CurrentLanguage/integration/push-single-parent-child-product";
+            $.ajax({
+                url: url,
+                data: { storeId: storeId, storeProductId: storeProductId, productId: productId, integrationId: integrationId, languageId: languageId },
+                cache: false,
+                type: "POST",
+                success: function (data) {
+                    $("#LoadingImage").hide();
+                    if (data == 1) {
+                        alert("İşlem Başarılı")
+                    }
+                    else {
+                        alert("Hata!! İşlem Yapılamadı");
+                    }
+                }
+            });
+        });
+    });
+</script>
+

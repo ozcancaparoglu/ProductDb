@@ -1,0 +1,864 @@
+﻿@inject CustomLocalizer localizer
+@model ProductViewModel
+
+<script src="~/Assets/bower_components/ckeditor/ckeditor.js"></script>
+
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+
+<script src="~/Assets/kendo/js/kendo.culture.tr-TR.min.js"></script>
+<script src="~/Assets/common/form.validation.js"></script>
+@using (Html.BeginForm("Edit", "Product", FormMethod.Post, new { enctype = "multipart/form-data", id = "Product" }))
+{
+    @Html.HiddenFor(model => model.Product.Id)
+    @Html.HiddenFor(model => model.Product.ParentProductId)
+    @Html.HiddenFor(model => model.Product.State)
+    @Html.HiddenFor(model => model.Product.CreatedDate)
+    @Html.HiddenFor(model => model.Product.ProcessedBy)
+    @Html.HiddenFor(model => model.ParentProduct.Id)
+    <!-- Content Header (Page header) -->
+    <section class="content-header clearfix">
+        <h1 class="pull-left">
+            @Model.Product.Title
+            <small>@localizer["Edit"]</small>
+        </h1>
+
+        <div class="pull-right">
+            <button type="submit" name="save" class="btn bg-blue">
+                <i class="fa fa-pencil"></i>
+                @localizer["Edit"]
+            </button>
+            <a href="/@localizer.CurrentLanguage/products/list" class="btn bg-red">
+                <i class="fa fa-ban"></i>
+                @localizer["Cancel"]
+            </a>
+        </div>
+    </section>
+
+    @if (!ViewBag.Validation)
+    {
+        <section class="content">
+            <div class="row">
+                <div class="box box-primary">
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="alert alert-danger">
+                                    <h4><i class="icon fa fa-ban"></i> @localizer["ValidationFailure"]</h4>
+                                    @localizer["MandotaryFailure"] <br />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+
+    <section class="content">
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">@localizer["Edit"] @localizer["Product"] | @Model.ParentProduct.Sku | @Model.Product.Sku </h3>
+                </div>
+                <div class="box-body">
+                    <div class="nav-product-tabs nav-tabs-custom">
+                        <ul class="nav-product-tabs nav nav-tabs" id="nav-product-tabs-custom">
+                            <li><a href="#tab_100" data-toggle="tab" aria-expanded="true">@localizer["Fields"]</a></li>
+                            <li><a href="#tab_101" data-toggle="tab" aria-expanded="false">@localizer["Attributes"]</a></li>
+                            <li><a href="#tab_102" data-toggle="tab" aria-expanded="false">@localizer["Pictures"]</a></li>
+                            <li><a href="#tab_104" data-toggle="tab" aria-expanded="false">@localizer["ErpProduct"]</a></li>
+                        </ul>
+                        <div class="tab-content" id="nav-product-tabs-custom-content">
+                            <div class="tab-pane active" id="tab_100">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading">
+                                                @localizer["GeneralInformation"]
+                                            </div>
+                                            <div class="panel-body">
+                                                <div class="form-group">
+                                                    <label>@localizer["Category"]</label><br />
+                                                    <span>@Model.CategoryName</span>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="Sku @localizer["MaxCharNumber"]">
+                                                        <label>Sku <small style="color:red"> @localizer["Required"]</small></label>
+                                                    </label>
+                                                    @Html.TextBoxFor(model => model.Product.Sku, new { @class = "form-control", placeholder = $"{localizer["ProductPlaceholder"]} sku", @readonly = true })
+                                                    <span class="text-red">@Html.ValidationMessageFor(model => model.Product.Sku)</span>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["Name"] @localizer["MaxCharNumber"]">
+                                                        <label>@localizer["Name"] <small style="color:red"> @localizer["Required"]</small></label>
+                                                    </label>
+                                                    @Html.TextBoxFor(model => model.Product.Name, new { @class = "form-control", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["Name"]}" })
+                                                    <span class="text-red">@Html.ValidationMessageFor(model => model.Product.Name)</span>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["Title"] @localizer["MaxCharNumber"]">
+                                                        <label>@localizer["Title"] <small style="color:red"> @localizer["Required"]</small></label>
+                                                    </label>
+                                                    @Html.TextBoxFor(model => model.Product.Title, new { @class = "form-control", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["Title"]}" })
+                                                    <span class="text-red">@Html.ValidationMessageFor(model => model.Product.Title)</span>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["Barcode"] @localizer["MaxCharNumber"]">
+                                                        <label>@localizer["Barcode"] <small style="color:red"> @localizer["Required"]</small></label>
+                                                    </label>
+                                                    @Html.TextBoxFor(model => model.Product.Barcode, new { @class = "form-control", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["Barcode"]}" })
+                                                    <span class="text-red">@Html.ValidationMessageFor(model => model.Product.Barcode)</span>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["Gtip"] @localizer["MaxCharNumber"]">
+                                                        <label>@localizer["Gtip"]</label>
+                                                    </label>
+                                                    @Html.TextBoxFor(model => model.Product.Gtip, new { @class = "form-control", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["Gtip"]}" })
+                                                    <span class="text-red">@Html.ValidationMessageFor(model => model.Product.Gtip)</span>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["Model"] @localizer["MaxCharNumber"]">
+                                                        <label>@localizer["Model"]</label>
+                                                    </label>
+                                                    @Html.TextBoxFor(model => model.Product.Model, new { @class = "form-control", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["Model"]}" })
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["Example"] : 1.5">
+                                                        <label>@localizer["Desi"]</label><i class="fa fa-question" aria-hidden="true"></i>
+                                                    </label>
+                                                    @Html.TextBoxFor(model => model.Product.DesiString, new { @class = "form-control maskedInput", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["Desi"]}" })
+                                                    <span class="text-red">@Html.ValidationMessageFor(model => model.Product.DesiString)</span>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["Example"] : 1.5">
+                                                        <label>@localizer["AbroadDesi"]</label><i class="fa fa-question" aria-hidden="true"></i>
+                                                    </label>
+                                                    @Html.TextBoxFor(model => model.Product.AbroadDesiString, new { @class = "form-control maskedInput", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["AbroadDesi"]}" })
+                                                    <span class="text-red">@Html.ValidationMessageFor(model => model.Product.AbroadDesiString)</span>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["Example"] : 150.99">
+                                                        <label>@localizer["BuyingPrice"]</label><i class="fa fa-question" aria-hidden="true"></i>
+                                                    </label>
+                                                    @Html.TextBoxFor(model => model.Product.BuyingPriceString, new { @class = "form-control maskedInput", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["BuyingPrice"]}" })
+                                                    <span class="text-red">@Html.ValidationMessageFor(model => model.Product.BuyingPriceString)</span>
+                                                    @Html.DropDownListFor(model => model.Product.CurrencyId, new SelectList(Model.Currencies.ToList(), "Id", "Abbrevation"), new { @class = "form-control select2" })
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["Example"] : 150.99">
+                                                        <label>@localizer["MarketPrice"]</label><i class="fa fa-question" aria-hidden="true"></i>
+                                                    </label>
+                                                    @Html.TextBoxFor(model => model.Product.PsfPriceString, new { @class = "form-control maskedInput", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["MarketPrice"]}" })
+                                                    <span class="text-red">@Html.ValidationMessageFor(model => model.Product.PsfPriceString)</span>
+                                                    @Html.DropDownListFor(model => model.Product.PsfCurrencyId, new SelectList(Model.Currencies.ToList(), "Id", "Abbrevation"), new { @class = "form-control select2" })
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["Example"] : 150.99">
+                                                        <label>@localizer["CorporatePrice"]</label><i class="fa fa-question" aria-hidden="true"></i>
+                                                    </label>
+                                                    @Html.TextBoxFor(model => model.Product.CorporatePriceString, new { @class = "form-control maskedInput", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["CorporatePrice"]}" })
+                                                    <span class="text-red">@Html.ValidationMessageFor(model => model.Product.CorporatePriceString)</span>
+                                                    @Html.DropDownListFor(model => model.Product.CorporateCurrencyId, new SelectList(Model.Currencies.ToList(), "Id", "Abbrevation"), new { @class = "form-control select2" })
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["Example"] : 150.99">
+                                                        <label>@localizer["DdpPrice"]</label><i class="fa fa-question" aria-hidden="true"></i>
+                                                    </label>
+                                                    @Html.TextBoxFor(model => model.Product.DdpPriceString, new { @class = "form-control maskedInput", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["DdpPrice"]}" })
+                                                    <span class="text-red">@Html.ValidationMessageFor(model => model.Product.DdpPriceString)</span>
+                                                    @Html.DropDownListFor(model => model.Product.DdpCurrencyId, new SelectList(Model.Currencies.ToList(), "Id", "Abbrevation"), new { @class = "form-control select2" })
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["Example"] : 150.99">
+                                                        <label>@localizer["FobPrice"]</label><i class="fa fa-question" aria-hidden="true"></i>
+                                                    </label>
+                                                    @Html.TextBoxFor(model => model.Product.FobPriceString, new { @class = "form-control maskedInput", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["FobPrice"]}" })
+                                                    <span class="text-red">@Html.ValidationMessageFor(model => model.Product.FobPriceString)</span>
+                                                    @Html.DropDownListFor(model => model.Product.FobCurrencyId, new SelectList(Model.Currencies.ToList(), "Id", "Abbrevation"), new { @class = "form-control select2" })
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label>@localizer["Supplier"]</label>
+                                                    @Html.DropDownListFor(model => model.Product.SupplierId, new SelectList(Model.Suppliers, "Id", "Name"), new { @class = "form-control select2" })
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label>@localizer["Brand"]</label>
+                                                    @Html.DropDownListFor(model => model.Product.BrandId, new SelectList(Model.Brands, "Id", "Name"), new { @class = "form-control select2" })
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label>@localizer["VatRate"]</label>
+                                                    @Html.DropDownListFor(model => model.Product.VatRateId, new SelectList(Model.VatRates, "Id", "Name"), new { @class = "form-control select2" })
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>@localizer["ProductGroup"]</label>
+                                                    @Html.DropDownListFor(model => model.Product.ProductGroupId, new SelectList(Model.ProductGroups, "Id", "Name"), localizer["Select"], new { @class = "form-control select2" })
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>@localizer["ExpireDate"]</label>
+                                                    @Html.TextBoxFor(model => model.Product.ExpireDate, new { @class = "form-control maskedDate", style = "width: 100%" })
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading">
+                                                @localizer["General"] @localizer["Descriptions"]
+                                            </div>
+                                            <div class="panel-body">
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["Description"] @localizer["MaxCharNumber"]">
+                                                        <label>@localizer["Description"]</label><i class="fa fa-question" aria-hidden="true"></i>
+                                                    </label>
+                                                    @Html.TextAreaFor(model => model.Product.Description, 10, 5, new { @class = "form-control", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["Description"]}", maxlength = 5000 })
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["ShortDescription"] @localizer["MaxCharNumber"]">
+                                                        <label>@localizer["ShortDescription"]</label><i class="fa fa-question" aria-hidden="true"></i>
+                                                    </label>
+                                                    @Html.TextAreaFor(model => model.Product.ShortDescription, 10, 5, new { @class = "form-control", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["ShortDescription"]}", maxlength = 1000 })
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading">
+                                                @localizer["Store"] @localizer["Price"] @localizer["Status"]
+                                            </div>
+                                            <div class="panel-body">
+                                                @await Component.InvokeAsync("ProductPrice", Model.Product.Id)
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading">
+                                                @localizer["Meta"] @localizer["Descriptions"]
+                                            </div>
+                                            <div class="panel-body">
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["MetaTitle"] @localizer["MaxCharNumber"]">
+                                                        <label>@localizer["MetaTitle"]</label><i class="fa fa-question" aria-hidden="true"></i>
+                                                    </label>
+                                                    @Html.TextBoxFor(model => model.Product.MetaTitle, new { @class = "form-control", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["MetaTitle"]}" })
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["MetaKeywords"] @localizer["MaxCharNumber"]">
+                                                        <label>@localizer["MetaKeywords"]</label><i class="fa fa-question" aria-hidden="true"></i>
+                                                    </label>
+                                                    @Html.TextBoxFor(model => model.Product.MetaKeywords, new { @class = "form-control", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["MetaKeywords"]}" })
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["MetaDescription"] @localizer["MaxCharNumber"]">
+                                                        <label>@localizer["MetaDescription"]</label><i class="fa fa-question" aria-hidden="true"></i>
+                                                    </label>
+                                                    @Html.TextAreaFor(model => model.Product.MetaDescription, 10, 5, new { @class = "form-control", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["MetaDescription"]}", maxlength = 500 })
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["SearchEngineTerms"] @localizer["MaxCharNumber"]">
+                                                        <label>@localizer["SearchEngineTerms"]</label><i class="fa fa-question" aria-hidden="true"></i>
+                                                    </label>
+                                                    @Html.TextBoxFor(model => model.Product.SearchEngineTerms, new { @class = "form-control", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["SearchEngineTerms"]}" })
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["Alias"] @localizer["MaxCharNumber"]">
+                                                        <label>@localizer["Alias"]</label><i class="fa fa-question" aria-hidden="true"></i>
+                                                    </label>
+                                                    @Html.TextBoxFor(model => model.Product.Alias, new { @class = "form-control", placeholder = $"{localizer["ProductPlaceholder"]} {localizer["Alias"]}" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading">
+                                                @localizer["Warehouse"] @localizer["Stocks"] @localizer["Status"]
+                                            </div>
+                                            <div class="panel-body">
+                                                @await Component.InvokeAsync("WarehouseProductStock", Model.Product.Id)
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    @await Component.InvokeAsync("Language", new { fieldNames = ViewBag.FieldNames, tableName = ViewBag.tableName, Model.Product.Id })
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="tab_101">
+                                <div class="box box-primary">
+                                    <div class="box-header with-border">
+                                        <h3 class="box-title">@localizer["Category"] @localizer["Attributes"]</h3>
+                                        <div class="pull-right">
+                                            <button type="button" class="btn bg-blue" data-toggle="modal" data-target="#modal-attribute">
+                                                <i class="fa fa-plus"></i> @localizer["AddAttribute"]
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="box-body">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="panel panel-default">
+                                                    <div class="panel-heading">
+                                                        @localizer["Product"] @localizer["Category"] @localizer["Attributes"]
+                                                    </div>
+                                                    <div class="panel-body">
+
+                                                        @for (int i = 0; i < Model.ProductCategoryAttributes.Count(); i++)
+                                                        {
+                                                            @Html.HiddenFor(model => model.ProductCategoryAttributes[i].Id)
+                                                            @Html.HiddenFor(model => model.ProductCategoryAttributes[i].ProductId)
+                                                            @Html.HiddenFor(model => model.ProductCategoryAttributes[i].AttributesId)
+                                                            @Html.HiddenFor(model => model.ProductCategoryAttributes[i].Attributes.Name)
+                                                            @Html.HiddenFor(model => model.ProductCategoryAttributes[i].IsRequired)
+                                                            @Html.HiddenFor(model => model.ProductCategoryAttributes[i].CreatedDate)
+                                                            @Html.HiddenFor(model => model.ProductCategoryAttributes[i].State)
+                                                            <div class="form-group">
+                                                                <label>
+                                                                    @Model.ProductCategoryAttributes[i].Attributes.Name
+                                                                    @if (Model.ProductCategoryAttributes[i].IsRequired)
+                                                                    {
+                                                                        <small style="color:red"> @localizer["Required"]</small>
+                                                                    }
+                                                                    else if (Model.ProductCategoryAttributes[i].Id != 0)
+                                                                    {
+                                                                        <small style="color:red">
+                                                                            <a href="/@localizer.CurrentLanguage/products/removeAttribute/@Model.ProductCategoryAttributes[i].Id"> @localizer["Remove"]</a>
+                                                                        </small>
+                                                                    }
+                                                                </label>
+                                                                @Html.DropDownListFor(model => model.ProductCategoryAttributes[i].AttributeValueId, new SelectList(Model.ProductCategoryAttributes[i].Attributes.AttributesValues.ToList(), "Id", "Value"), localizer["Select"], new { @class = "form-control select2" })
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="panel panel-default">
+                                                    <div class="panel-heading">
+                                                        @localizer["Default"] @localizer["Product"] @localizer["Attributes"]
+                                                    </div>
+                                                    <div class="panel-body">
+                                                        @{
+                                                            var weightUnits = new int[] { 11, 12 };
+                                                            var metricUnits = new int[] { 13, 14, 15 };
+                                                        }
+
+                                                        @for (int i = 0; i < Model.ProductRequiredAttributes.Count(); i++)
+                                                        {
+                                                            @Html.HiddenFor(model => model.ProductRequiredAttributes[i].Id)
+                                                            @Html.HiddenFor(model => model.ProductRequiredAttributes[i].ProductId)
+                                                            @Html.HiddenFor(model => model.ProductRequiredAttributes[i].AttributesId)
+                                                            @Html.HiddenFor(model => model.ProductRequiredAttributes[i].Attributes.Name)
+                                                            @Html.HiddenFor(model => model.ProductRequiredAttributes[i].IsRequired)
+                                                            @Html.HiddenFor(model => model.ProductRequiredAttributes[i].CreatedDate)
+                                                            @Html.HiddenFor(model => model.ProductRequiredAttributes[i].State)
+                                                            <div class="form-group">
+                                                                <label>
+                                                                    @Model.ProductRequiredAttributes[i].Attributes.Name
+
+                                                                    @if (weightUnits.Contains(Model.ProductRequiredAttributes[i].Attributes.Id))
+                                                                    {<small>(g)</small> }
+                                                                    else if (metricUnits.Contains(Model.ProductRequiredAttributes[i].Attributes.Id))
+                                                                    { <small>(cm)</small>}
+
+                                                                    <small style="color:red"> @localizer["Required"]</small>
+
+                                                                </label>
+                                                                @Html.TextBoxFor(model => model.ProductRequiredAttributes[i].RequiredAttributeValue, new { @class = "form-control " })
+                                                            </div>
+                                                        }
+
+                                                        @{ var ids = Model.ProductRequiredAttributes.Select(x => x.Id).ToList(); }
+
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                @await Component.InvokeAsync("LanguageAttribute", new { fieldNames = ViewBag.RequiredAttributeFieldNames, tableName = ViewBag.RequiredAttributeTableName, ids })
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="tab_102">
+                                <div class="row">
+                                    <div class="box box-primary">
+                                        <div class="box-header with-border">
+                                            <h3 class="box-title">@localizer["Product"] @localizer["Pictures"]</h3>
+                                            <div class="pull-right">
+                                                <button type="button" class="btn bg-blue" data-toggle="modal" data-target="#modal-picture">
+                                                    <i class="fa fa-plus"></i> @localizer["AddNew"] @localizer["Picture"]
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="box-body">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="panel panel-default">
+                                                        <div class="panel-heading">
+                                                            @localizer["Product"] @localizer["Pictures"]
+                                                        </div>
+                                                        <div class="panel-body">
+                                                            <table id="productPictureList" class="table table-bordered table-hover">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>@localizer["Picture"]</th>
+                                                                        <th>Cdn @localizer["Path"]</th>
+                                                                        <th>Alt</th>
+                                                                        <th>Title</th>
+                                                                        <th>@localizer["Order"]</th>
+                                                                        <th>@localizer["Edit"]</th>
+                                                                        <th>@localizer["Remove"]</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    @foreach (var picture in Model.ProductPictures)
+                                                                    {
+                                                                        <tr>
+                                                                            <td><img src="@picture.CdnPath" height="100" width="100" /></td>
+                                                                            <td>@picture.CdnPath</td>
+                                                                            <td>@picture.Alt</td>
+                                                                            <td>@picture.Title</td>
+                                                                            <td>@picture.Order</td>
+                                                                            <td>
+                                                                                <button type="button" class="btn btn-default" data-toggle="modal"
+                                                                                        data-id="@picture.Id"
+                                                                                        data-alt="@picture.Alt"
+                                                                                        data-title="@picture.Title"
+                                                                                        data-order="@picture.Order"
+                                                                                        data-target="#modal-picture-edit">
+                                                                                    <i class="fa fa-edit"></i> @localizer["Edit"]
+                                                                                </button>
+                                                                            </td>
+                                                                            <td>
+                                                                                <a href="/@localizer.CurrentLanguage/picture/delete/@picture.Id">
+                                                                                    @if (picture.State == (int)State.Active)
+                                                                                    {
+                                                                                        <i class="fa fa-check fa-fw"></i> <span>@localizer["Active"]</span>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <i class="fa fa-close"></i> <span>@localizer["Passive"]</span>
+                                                                                    }
+                                                                                </a>
+                                                                            </td>
+                                                                        </tr>
+                                                                    }
+                                                                </tbody>
+                                                                <tfoot>
+                                                                    <tr>
+                                                                        <th>@localizer["Picture"]</th>
+                                                                        <th>Cdn @localizer["Path"]</th>
+                                                                        <th>Alt</th>
+                                                                        <th>Title</th>
+                                                                        <th>@localizer["Order"]</th>
+                                                                        <th>@localizer["Edit"]</th>
+                                                                        <th>@localizer["Remove"]</th>
+                                                                    </tr>
+                                                                </tfoot>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @*<div class="tab-pane" id="tab_103">
+                                    <div class="row">
+                                        <div class="box box-primary">
+                                            <div class="box-header with-border">
+                                                <h3 class="box-title">@localizer["Store"] @localizer["Prices"]</h3>
+                                            </div>
+                                            <div class="box-body">
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <div class="panel panel-default">
+                                                            <div class="panel-heading">
+                                                                @localizer["Store"] @localizer["Prices"]
+                                                            </div>
+                                                            <div class="panel-body">
+                                                                @await Component.InvokeAsync("ProductStorePriceTab", new { productId = Model.Product.Id })
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>*@
+                            <div id="tab_104" class="tab-pane">
+                                <div class="row">
+                                    <div class="box box-primary">
+                                        <div class="box-header with-border">
+                                            <h3 class="box-title">@localizer["ErpProduct"]</h3>
+                                        </div>
+                                        <div class="box-body">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="panel panel-default">
+                                                        <div class="panel-heading">
+                                                        </div>
+                                                        <div class="panel-body">
+                                                            <select id="ErpCompany" multiple="multiple" class="form-control" asp-items="@(new SelectList(Model.ErpCompanies,"FirmNo","FirmName"))">
+                                                            </select>
+                                                        </div>
+                                                        <div class="panel-footer">
+                                                            <button type="button" class="btn btn-primary" id="btnSyncFirm"><span class="glyphicon glyphicon-refresh"></span> @localizer["SyncFirm"]</button>
+                                                            <button type="button" class="btn btn-primary" id="btnSendToLogo"><span class="glyphicon glyphicon-send"></span> @localizer["SendLogo"]</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="alert" id="erpResult" role="alert">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--
+                                   Logo Product Insert Will Add
+                                -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+@await Component.InvokeAsync("AddAttribute", new
+{
+    parentAttributesModels = Model.ProductCategoryAttributes.Select(x => x.Attributes).ToList(),
+    attributesModels = Model.ProductRequiredAttributes.Select(x => x.Attributes).ToList(),
+    entityId = Model.Product.Id,
+    type = "Product"
+})
+
+@await Component.InvokeAsync("AddPicture", new { sku = Model.Product.Sku, productId = Model.Product.Id })
+
+<div id="ProductGroupContent">
+</div>
+
+<div class="modal fade" id="modal-picture-edit" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title">@localizer["Picture"]</h4>
+            </div>
+            <form method="post" id="editPicture" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" id="pictureId" name="Id" />
+                    <input type="hidden" id="productId" name="ProuductId" value="@Model.Product.Id" />
+                    <div class="form-group">
+                        <label>Alt</label>
+                        <input type="text" id="pictureAlt" name="Alt" class="form-control" placeholder="Please enter picture alt" />
+                    </div>
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" id="pictureTitle" name="Title" class="form-control" placeholder="Please enter picture title" />
+                    </div>
+                    <div class="form-group">
+                        <label>@localizer["Order"]</label>
+                        <input type="number" id="pictureOrder" name="Order" class="form-control" placeholder="Please enter picture order" />
+                    </div>
+                    <div class="alert alert-danger hidden" id="picture-edit-alert">
+                        <h4><i class="icon fa fa-ban"></i> @localizer["Attention"]</h4>
+                        <span>Something wrong! Picture can not be updated! Please contact the administrator.</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">@localizer["Close"]</button>
+                    <button type="submit" class="btn btn-primary">@localizer["Edit"]</button>
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<!-- Page script -->
+<script>
+
+    $(function () {
+
+        // links
+        var aS = $("#nav-product-tabs-custom li a");
+        // lis
+        var lis = $("#nav-product-tabs-custom li");
+        // contents
+        var contentS = $("#nav-product-tabs-custom-content .tab-pane");
+        // change click and set localStorage
+        aS.click(function () {
+            localStorage.setItem("tabKey", $(this).attr("href"));
+        });
+
+        // remove all active and collapse data
+        var removeAll = function () {
+            aS.attr("aria-expanded", false);
+            lis.removeClass("active");
+            contentS.removeClass("active");
+        }
+
+        // get localstorage data
+        var setLocalStorageItem = function () {
+            // localstoragedata
+            var item = localStorage.getItem("tabKey");
+            // if undefined return
+            if (item == null || item == undefined) {
+                return;
+            }
+            // remove all
+            removeAll();
+            // find it
+            var activeA = $("#nav-product-tabs-custom li a[href='" + item + "']");
+            // set aria-expanded and set parent li active
+            activeA.attr("aria-expanded", true);
+            activeA.parent().addClass("active");
+            // set active tab
+            var activeTab = $("#nav-product-tabs-custom-content div[id='" + item.substr(1) + "']")
+            activeTab.addClass("active");
+
+        }
+        setLocalStorageItem();
+
+        $('.select2').select2();
+
+        var productTabsLi = $('#languageTabs li').first();
+        productTabsLi.addClass('active');
+
+        var attributesTabsLi = $('#languageAttributesTabs li').first();
+        attributesTabsLi.addClass('active');
+
+        var item = localStorage.getItem("tabKey");
+
+        if (item == null || item == undefined) {
+            // all inner tabs set first element
+            var tabsli = $('.nav-tabs li').first();
+            tabsli.addClass("active");
+        }
+
+        $('#tab_0').addClass("active");
+        $('#tab_200').addClass("active");
+
+        $('#productPictureList').DataTable({
+            'paging': true,
+            'lengthChange': true,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            'pageLenght': 100
+        });
+
+        $('#warehouseStockList').DataTable({
+            'paging': true,
+            'lengthChange': true,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            'pageLenght': 100
+        });
+        $('#storePricesList').DataTable({
+            'paging': true,
+            'lengthChange': true,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            'pageLenght': 100
+        });
+
+
+        var textAreas = $("textarea");
+        textAreas.each(function (index, element) {
+            var lenght = $(element).attr('maxlength');
+
+            CKEDITOR.replace($(element).attr('id'), {
+                extraPlugins: 'wordcount',
+                wordcount: {
+                    showWordCount: true,
+                    showCharCount: true,
+                    maxCharCount: lenght == undefined ? -1 : lenght,
+                }
+            });
+        });
+
+        $('#modal-picture-edit').on('show.bs.modal', function (e) {
+
+            //get data-id attribute of the clicked element
+            var pictureId = $(e.relatedTarget).data('id');
+            var alt = $(e.relatedTarget).data('alt');
+            var title = $(e.relatedTarget).data('title');
+            var order = $(e.relatedTarget).data('order');
+
+            //populate the textbox
+            $(e.currentTarget).find('input[name="Id"]').val(pictureId);
+            $(e.currentTarget).find('input[name="Alt"]').val(alt);
+            $(e.currentTarget).find('input[name="Title"]').val(title);
+            $(e.currentTarget).find('input[name="Order"]').val(order);
+        });
+
+        $("form#editPicture").submit(function (e) {
+
+            e.preventDefault();
+            var pictureId = $('#pictureId').val();
+            var productId = $('#productId').val();
+            var pictureAlt = $('#pictureAlt').val();
+            var pictureTitle = $('#pictureTitle').val();
+            var pictureOrder = $('#pictureOrder').val();
+
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/picture/edit",
+                type: 'POST',
+                data: { id: pictureId, productId: productId, pictureAlt: pictureAlt, pictureTitle: pictureTitle, order: pictureOrder },
+                cache: false,
+                success: function (data) {
+                    if (data.success)
+                        window.location = data.url;
+                    else
+                        $('#picture-edit-alert').removeClass('hidden');
+                }
+            });
+        });
+
+        $(".maskedInput").inputmask({
+            'alias': 'decimal',
+            'rightAlign': false,
+            'groupSeparator': '.',
+            'autoGroup': true,
+            'radixPoint': ','
+        });
+        // datepicker
+        $(".maskedDate").kendoDatePicker({
+            culture: "tr-TR",
+        });
+
+        var ProductGroupContent = $("#ProductGroupContent");
+
+        $("#btnProductGroupSearch").on("click", function () {
+
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/products/get-product-group-page",
+                dataType: "html",
+                type: "GET",
+                beforeSend: function () {
+                    ProductGroupContent.empty();
+                },
+                success: function (response) {
+                    ProductGroupContent.html(response);
+                    var modal_product_groups = $("#modal-product-groups");
+                    modal_product_groups.modal('show');
+                },
+                error: function (response) {
+                    console.log(response.responseText);
+                }
+            })
+
+        })
+
+
+         // new
+        var erpResult = $("#erpResult");
+        var loader = $("#cover-spin");
+        // selected Erp Companies
+        var selectedErpCompanies = [];
+        var multiSelect = $("#ErpCompany").kendoMultiSelect().data("kendoMultiSelect");
+        // if product already inserted each company, set selected company
+        @foreach (var item in Model.ErpSelectedCompanies)
+        {
+            @:selectedErpCompanies.push(@item.ErpCompany.FirmNo)
+        }
+        // set selected values
+        multiSelect.value(selectedErpCompanies);
+        // send to erp each selected company
+        var SendToLogo = function (companyId) {
+
+            loader.show();
+            var productId = $("#@Html.IdFor(model => model.Product.Id)").val();
+
+            $.ajax({
+            url: "/PMS/item/InsertItem/" + productId + "/" + companyId,
+                type: "POST",
+                dataType: "json",
+                success: function (response) {
+                    erpResult.html(response.message).addClass("alert-success");
+                },
+                error: function (response) {
+                    erpResult.html(response.message).addClass("alert-danger");
+                },
+                complete: function () {
+                    loader.hide();
+                }
+            })
+
+        }
+
+        $("#btnSendToLogo").on("click", function () {
+
+            var erpCompanies = $("#ErpCompany").getKendoMultiSelect();
+            var attributeItems = erpCompanies.dataItems();
+
+            // company select control
+            if (attributeItems.length == 0) {
+                alert("Firma Seçmediniz");
+                return;
+            }
+            // selected attributes
+            for (var i = 0; i < attributeItems.length; i++) {
+                SendToLogo(attributeItems[i].value);
+            }
+        })
+        // sync firms from erp
+        $("#btnSyncFirm").on("click", function () {
+            loader.show();
+            $.ajax({
+            url: "/PMS/company/SyncFirms",
+                type: "GET",
+                dataType: "json",
+                success: function (response) {
+                    loader.hide();
+                    erpResult.html(response.message).addClass("alert-success");
+                },
+                error: function (response) {
+                    loader.hide();
+                    erpResult.html(response.message).addClass("alert-danger");
+                }
+            })
+        })
+    });
+</script>

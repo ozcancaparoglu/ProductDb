@@ -1,0 +1,335 @@
+﻿@inject CustomLocalizer localizer
+@model ProductDockBySupplierViewModel
+
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+
+
+@using (Html.BeginForm("List", "ProductDock", FormMethod.Post, new { id = "ProductDockSearch" }))
+{
+    <section class="content">
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                </div>
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    @localizer["Product"] @localizer["Dock"] @localizer["Pairing"]
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label>@localizer["Suppliers"]</label>
+                                        @Html.DropDownListFor(model => model.SupplierId, new SelectList(Model.Suppliers, "Id", "Name"), localizer["Select"], new { @class = "form-control select2" })
+                                    </div>
+                                    <div class="form-group">
+                                        <label>@localizer["Supplier"] @localizer["Categories"]</label>
+                                        @Html.DropDownListFor(model => model.ProductDockCategoryId, new SelectList(Model.ProductDockCategories, "Id", "Name"), localizer["Select"], new { @class = "form-control select2" })
+                                    </div>
+                                </div>
+
+                                <div class="panel-footer">
+                                    <button type="submit" name="save" class="btn bg-blue">
+                                        <i class="fa fa-search"></i>
+                                        @localizer["Search"]
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+<div id="cover-spin"></div>
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title">@localizer["Search"] @localizer["Results"]</h3>
+            </div>
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading right">
+                                <button id="SaveAllProductDocks" type="button" class="btn btn-primary small">
+                                    <span class="glyphicon glyphicon-save"></span> @localizer["Save"] @localizer["Products"]
+                                </button>
+                            </div>
+                            <div class="panel-body">
+                                <div class="table-responsive">
+                                    <table id="productList" class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>@localizer["Picture"]</th>
+                                                <th>Sku</th>
+                                                <th>@localizer["Name"]</th>
+                                                <th>@localizer["Parent"] Sku</th>
+                                                <th>@localizer["Change"]</th>
+                                                <th>@localizer["Detail"]</th>
+                                                <th>@localizer["UpdatedDate"]</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var product in Model.ProductDocks)
+                                            {
+                                                <tr>
+                                                    @if (product.Pictures != null && product.Pictures.Count > 0)
+                                                    {
+                                                        <td><img src="@product.Pictures.OrderBy(x => x.Id).FirstOrDefault().DownloadUrl" height="100" width="100" /></td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td>@localizer["NoImage"]</td>
+                                                    }
+
+                                                    <td>@product.Sku</td>
+                                                    <td>@product.Name</td>
+                                                    <td>
+                                                        @{
+
+                                                            if (product.ParentProductDock != null)
+                                                            {
+                                                                @product.ParentProductDock.Sku;
+                                                            }
+                                                            else
+                                                            {
+                                                                <button type="button" class="btn btn-primary small productVariantItem" data-id=@product.Id>
+                                                                    @localizer["Product"] @localizer["Variant"]
+                                                                </button>
+                                                            }
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-primary small productChangeParent" data-id="@product.Id"
+                                                                data-parentId="@product.ParentProductDockId">
+                                                            <span class="glyphicon glyphicon-share"></span> @localizer["Change"] @localizer["Parent"] Sku
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-primary small productDockEdit" data-id="@product.Id">
+                                                            <i class="fa fa-edit"></i> @localizer["Detail"]
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        @product.UpdatedDate
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="DataContent">
+</div>
+
+<script>
+
+    $(document).ready(function () {
+
+        var kendoGrid = $("#productList").kendoGrid({
+            toolbar: ["excel"],
+            excel: {
+                fileName: "VariantedAndNotVariantedProductList",
+                proxyURL: "https://demos.telerik.com/kendo-ui/service/export",
+                filterable: true
+            },
+            dataSource: {
+                pageSize: 100,
+                group: { field: "ParentSKU" }
+            },
+            height: 800,
+            sortable: true,
+            groupable: true,
+            filterable: {
+                mode: "row"
+            },
+            pageable: true
+        });
+
+        //$("#ExportToExcel").click(function () {
+        //    debugger;
+        //    var grid = $("#productList").data("kendoGrid");
+        //    grid.saveAsExcel();
+        //    //kendoGrid.saveAsExcel();
+
+        //});
+        var Loading = $("#cover-spin");
+        $('.select2').select2();
+
+        var modalContent = $("#DataContent");
+
+        $("#SupplierId").on("change", function () {
+            var id = $(this).val();
+            var categories = $("#ProductDockCategoryId");
+            if (id == undefined || id == null || id == "") {
+                return;
+            }
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/Product-Dock/ProductDockCategoryBySupplierId/" + id,
+                type: "GET",
+                beforeSend: function () {
+                    Loading.show();
+                },
+                success: function (response) {
+                    categories.empty();
+                    if (response.data.length != 0) {
+                        $.each(response.data, function (index, _data) {
+                            categories.append($("<option></option>").val("").html('@localizer["Select"]'));
+                            categories.append($("<option></option>").val(_data.id).html(_data.name));
+                        });
+                    } else {
+                        categories.append($("<option></option>").val("").html('@localizer["Select"]'));
+                    }
+                },
+                error: function (response) {
+                    alert(response.responseText);
+                },
+                complete: function () {
+                    Loading.hide();
+                }
+            });
+
+        })
+        $("form#ProductDockSearch").submit(function () {
+            if ($(this).valid()) {
+                Loading.show();
+            }
+
+        })
+
+        $("#productList tbody").on("click", ".productVariantItem", function () {
+            modalContent.empty();
+            var id = $(this).attr("data-id");
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/product-dock/dock-edit/notvariantedproductdocks/" + id,
+                type: "GET",
+                cache: false,
+                async: true,
+                beforeSend: function () {
+                    Loading.show();
+                },
+                dataType: "html",
+                success: function (response) {
+                    modalContent.html(response);
+                    var modal = $("#modal-product-variant");
+                    modal.modal('show');
+                },
+                error: function (response) {
+                    console.log(response.responseText);
+                },
+                complete: function () {
+                    Loading.hide();
+                }
+            })
+
+        });
+        $("#productList tbody").on("click", ".productChangeParent", function () {
+
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/parent-products/GetParentProductDocks/" + $(this).attr("data-id"),
+                type: "GET",
+                dataType: "html",
+                cache: false,
+                async: true,
+                beforeSend: function () {
+                    modalContent.empty();
+                    Loading.show();
+                },
+                success: function (response) {
+                    modalContent.html(response);
+                    var modal = $("#modal-add-parent-product");
+                    modal.modal('show');
+                },
+                error: function (response) {
+                    console.log(response.responseText);
+                },
+                complete: function () {
+                    Loading.hide();
+                }
+            });
+
+        });
+        $("#productList tbody").on("click", ".productDockEdit", function () {
+            var id = $(this).attr("data-id");
+
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/product-dock/dock-edit/" + id,
+                type: "GET",
+                dataType: "html",
+                cache: false,
+                async: true,
+                beforeSend: function () {
+                    modalContent.empty();
+                    Loading.show();
+                },
+                success: function (response) {
+                    modalContent.html(response);
+                    var modal = $("#modal-product-dock");
+                    modal.modal('show');
+                },
+                error: function (response) {
+                    console.log(response.responseText);
+                },
+                complete: function () {
+                    Loading.hide();
+                }
+            });
+        });
+
+        $("#SaveAllProductDocks").on("click", function (e) {
+
+            e.preventDefault();
+            var boxtitle = $(".box-title");
+            var supplierId = $("#SupplierId").val();
+
+            boxtitle.empty();
+            boxtitle.removeClass("text-danger");
+
+            if (supplierId == "") {
+                boxtitle.html("Supplier Not Selected.");
+                boxtitle.addClass("text-danger");
+                return;
+            }
+
+            var productDockCategoryId = $("#ProductDockCategoryId").val();
+            modalContent.empty();
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/product-dock/get-product-category/" + supplierId + "/" + productDockCategoryId,
+                type: "GET",
+                dataType: "html",
+                beforeSend: function () {
+                    Loading.show();
+                },
+                success: function (response) {
+                    modalContent.html(response);
+                    var modal = $("#modal-category");
+                    modal.modal('show');
+                },
+                error: function (response) {
+                    console.log(response.responseText);
+                },
+                complete: function () {
+                    Loading.hide();
+                }
+            })
+
+
+        });
+
+    })
+
+</script>

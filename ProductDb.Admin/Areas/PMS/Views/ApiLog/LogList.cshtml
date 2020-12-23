@@ -1,0 +1,180 @@
+﻿
+@model LogViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+<style>
+    .k-filter-row .k-dropdown-operator {
+        right: 0;
+    }
+
+    .k-filtercell > span {
+        padding-right: 2.7em !important;
+        width: 100% !important;
+    }
+
+    .k-grid .k-grid-header .k-header .k-link {
+        height: auto;
+    }
+
+
+    .k-grid .k-grid-header .k-header {
+        white-space: normal;
+        font-weight: bold !important;
+    }
+
+
+    .kendo-table-outter {
+        overflow-x: auto;
+    }
+
+
+        .kendo-table-outter td {
+            white-space: nowrap;
+        }
+
+
+    .k-filter-row .k-dropdown-operator {
+        right: 0;
+    }
+
+
+    .k-filtercell > span {
+        padding-right: 2.7em !important;
+        width: 100% !important;
+    }
+</style>
+<section class="content-header clearfix">
+    <h1 class="pull-left">
+        Log
+        <small>Listesi</small>
+    </h1>
+
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                Erp Firmalar
+                            </div>
+                            <div class="panel-body">
+                                <select class="form-control" id="capiFirms" asp-items="@(new SelectList(Model.Firms,"FirmNo","FirmName"))">
+                                    <option>--Seçiniz--</option>
+                                </select>
+                            </div>
+                            <div class="panel-footer">
+                                <button type="button" id="allLogs"><span class="glyphicon glyphicon-refresh"></span> Getir </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                Loglar
+                            </div>
+                            <div class="panel-body">
+                                <div id="allLogsGrid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="viewContent">
+</div>
+
+<script>
+
+    $(function () {
+
+        var grid = $("#allLogsGrid");
+        //  all log data from server
+        var allLogFromServer = function () {
+
+            //destroy all data
+            var gridData = grid.data("kendoGrid");
+            if (gridData != undefined) {
+                gridData.destroy();
+            }
+            // get selected firm
+            var selectedFirm = $("#capiFirms").val();
+            if (selectedFirm == "") {
+                alert("Firma Seçimi Yapmadınız");
+                return;
+            }
+            debugger;
+            // call all logs from api
+            grid.kendoGrid({
+                toolbar: ["excel"],
+                excel: {
+                    fileName: "LogList.xlsx",
+                    filterable: true,
+                    allPages: true
+                },
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "/pms/log/logList-companyId/" + selectedFirm,
+                            dataType: "json",
+                            type: "POST"
+                        }
+                    },
+                    schema: {
+                        total: "total", // total is returned in the "total" field of the response
+                        data: "data", // records are returned in the "data" field of the response
+                        model: {
+                            id: "id"
+                        }
+                    },
+                    pageSize: 100,
+                    serverPaging: true,
+                    serverFiltering: true,
+                    serverSorting: true
+                },
+                height: 750,
+                filterable: {
+                    mode: "row"
+                },
+                sortable: true,
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 5
+                },
+                resizable: true,
+                columns: [
+                    { field: "entityId", title: "Entity ID" },
+                    { field: "entityKey", title: "Entity Key" },
+                    { field: "message", title: "Message" },
+                    { field: "createDate", title: "Create Date",template: '#= kendo.toString(kendo.parseDate(createDate), "dd/MM/yyyy HH.mm.ss")#' },
+                    { field: "companyId", title: "companyId" }
+                ]
+            });
+        }
+
+        $("#allLogs").on("click", function () {
+            allLogFromServer();
+        });
+
+    });
+</script>
+

@@ -1,0 +1,151 @@
+﻿@model ProductVariantModel
+
+@inject CustomLocalizer localizer
+
+@{
+    var IDs = Model.IDs;
+}
+<div class="modal fade" id="modal-variant" style="display: none;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" id="addProductVariant" onsubmit="return false">
+                @Html.HiddenFor(x => x.ParentProductId)
+                @Html.HiddenFor(x => x.IDs)
+                @Html.HiddenFor(x => x.Product.Id)
+                <div class="modal-body">
+                    <fieldset>
+                        <legend><h3> @localizer["Selected"] @localizer["Product"] @localizer["Info"]</h3></legend>
+                        <table id="productDock" class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>@localizer["Picture"]</th>
+                                    <th>@localizer["Sku"]</th>
+                                    <th>@localizer["Title"]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        @if (Model.Product.Pictures.Count > 0)
+                                        {
+                                            <img src="@Model.Product.Pictures.FirstOrDefault().CdnPath" height="100" width="100" />
+                                        }
+                                    </td>
+                                    <td>
+                                        @Model.Product.Sku
+                                    </td>
+                                    <td>
+                                        @Model.Product.Title
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </fieldset>
+                    <hr />
+                    <div id="gridProductVariant"></div>
+                    <div class="alert alert-danger hidden">
+                        <h4><i class="icon fa fa-ban"></i> Attention!</h4>
+                        @localizer["Please"] @localizer["Select"] a @localizer["Product"]
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">@localizer["Close"]</button>
+                    <button type="submit" class="btn btn-primary">@localizer["Save"]</button>
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script>
+
+    var selectedIDs = [];
+    function onChange(arg) {
+         selectedIDs = this.selectedKeyNames();
+     }
+
+    $(function () {
+    
+        var IDs = [];
+        @foreach (var d in Model.IDs)
+        {
+            @:IDs.push("@d");
+        }
+
+        var data = {
+            IDs: IDs,
+            id: $("#@Html.IdFor(model=>model.Product.Id)").val(),
+            parentProductId: $("#@Html.IdFor(model => model.ParentProductId)").val()
+        }
+        debugger;
+        $("#gridProductVariant").kendoGrid({
+            dataSource: {
+                pageSize: 10,
+                transport: {
+                    read: {
+                        url: "/@localizer.CurrentLanguage/ProductVariant/NotVariantedProductList",
+                        dataType: "json",
+                        type: "POST",
+                        data: data
+                    }
+                },
+                schema: {
+                    model: {
+                        id: "id"
+                    }
+                }
+            },
+            filterable: {
+                mode: "row"
+            },
+            pageable: true,
+            scrollable: false,
+            persistSelection: true,
+            sortable: true,
+            change: onChange,
+            columns: [
+                { selectable: true, width: "50px" },
+                { field: "title", title: "Name" },
+                { field: "sku", title: "Sku" }
+            ]
+        });
+
+        //Save product variant
+        $("#addProductVariant").on("submit", function (event) {
+
+            debugger;
+            console.log(selectedIDs);
+            // Selected Control
+            if (selectedIDs.length < 1) {
+                alert("Not Selected Any Product(s)");
+                return;
+            }
+            var data = {
+                baseId: $("#@Html.IdFor(model=> model.Product.Id)").val(),
+                parentProductId: $("#@Html.IdFor(model=>model.ParentProductId)").val(),
+                IDs: IDs,
+                selectedProdIds: selectedIDs
+            }
+            // ajax
+            $.ajax({
+                cache: false,
+                type: "POST",
+                dataType: "json",
+                url: "/@localizer.CurrentLanguage/ProductVariant/SaveProductVariant",
+                data: data,
+                success: function (response) {
+                    alert("Product Added");
+                    console.log(response);
+                },
+                error: function (response) {
+                    console.log(response.responseText);
+                }
+            });
+        });
+    })
+
+</script>
+

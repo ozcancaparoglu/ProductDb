@@ -1,0 +1,173 @@
+﻿@inject CustomLocalizer localizer
+@model StoreProductViewModel
+
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+
+<div class="modal fade" id="modal-store-copy">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="addProductsToStore">
+                @Html.HiddenFor(x => x.StoreId)
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-1">
+                            @localizer["Store"]
+                        </div>
+                        <div class="col-md-11">
+                            <select asp-items="@(new SelectList(Model.Stores,"Id","Name"))" id="TargetStoreId">
+                                <option value="">@localizer["Select"]</option>
+                            </select>
+                        </div>
+                    </div>
+                    <hr />
+                    <div id="grid"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">@localizer["Close"]</button>
+                    <button type="submit" class="btn btn-primary">@localizer["Save"]</button>
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script>
+
+    var loading = $("#cover-spin");
+    var oldPageSize = 0;
+
+    var selectedIDs = [];
+
+    function onChange(e) {
+        debugger;
+        selectedIDs = this.selectedKeyNames();
+    };
+
+    function onClick(e) {
+
+        var grid = $("#grid").data("kendoGrid");
+
+        debugger;
+        oldPageSize = grid.dataSource.pageSize();
+        grid.dataSource.pageSize(grid.dataSource.data().length);
+
+        if (grid.dataSource.data().length === grid.select().length) {
+            grid.clearSelection();
+        } else {
+            grid.select("tr");
+        };
+
+        grid.dataSource.pageSize(oldPageSize);
+
+        loading.hide();
+    }
+
+    $(function () {
+
+        var loading = $("#cover-spin");
+        var storeId = $("#StoreId").val();
+
+        $("#TargetStoreId").kendoComboBox({
+            filter: "contains",
+            suggest: true,
+            index: 3
+        });
+
+        // load data from server
+        $("#grid").kendoGrid({
+            dataSource: {
+                pageSize: 10,
+                transport: {
+                    read: {
+                        url: "/@localizer.CurrentLanguage/store/productByStoreId/" + storeId,
+                        dataType: "json"
+                    }
+                },
+                schema: {
+                    model: {
+                        id: "productId"
+                    }
+                }
+            },
+            pageable: true,
+            scrollable: false,
+            persistSelection: true,
+            sortable: true,
+            filterable: {
+                mode: "row"
+            },
+            change: onChange,
+            columns: [{
+                selectable: true,
+                width: "50px"
+            },
+            {
+                field: "product.sku",
+                title: "SKU"
+            },
+            {
+                field: "product.title",
+                title: "Title"
+            },
+            {
+                field: "stock",
+                title: "Stock"
+            },
+            {
+                field: "price",
+                title: "Selling Price"
+            }
+            ]
+        });
+
+        var grid = $("#grid").data("kendoGrid");
+        grid.thead.on("click", ".k-checkbox", onClick);
+
+        $("#addProductsToStore").on("submit", function (e) {
+
+            e.preventDefault();
+            // target store dropdown selected
+            var targetStoreId = $("#TargetStoreId").val();
+            var validationMessage = "";
+            // validation control
+            validationMessage += targetStoreId == "" ? "Target Store Not Selected" : "";
+            validationMessage += selectedIDs.length == 0 ? "Product(s) Not Selected" : "";
+
+            if (validationMessage != "") {
+                alert(validationMessage);
+                return;
+            }
+            // ajax data
+            var sendingData = {
+                StoreId: targetStoreId,
+                products: selectedIDs
+            };
+            // ajax call
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/store/storeProductInsert",
+                dataType: "json",
+                type: "POST",
+                data: sendingData,
+                cache: false,
+                async: true,
+                beforeSend: function () {
+                    loading.show();
+                },
+                success: function (response) {
+                    alert(response.message);
+                    //location.reload();
+                },
+                error: function (response) {
+                    loading.show();
+                    console.log(response.responseText);
+                },
+                complete: function () {
+                    loading.hide();
+                }
+            })
+
+        })
+    })
+</script>

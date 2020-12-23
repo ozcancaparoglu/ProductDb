@@ -1,0 +1,55 @@
+﻿@inject CustomLocalizer localizer
+@model List<FormulaModel>
+
+
+<table id="formulaList" class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>@localizer["Name"]</th>
+            <th>@localizer["Formula"]</th>
+            <th>@localizer["Order"]</th>
+            <th>@localizer["Result"]</th>
+            <th>@localizer["Delete"]</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var formula in Model)
+        {
+            <tr>
+                <td>@formula.Name</td>
+                <td>@formula.FormulaStr</td>
+                <td>@formula.Order</td>
+                @if (!formula.FormulaStr.Contains("ROUND")) // function için veritabanına bool değer yazılabilir bu if uzayıp gitmez. Gerek yok şimdilik.
+                {
+                    <td><button type="button" class="btn btn-success product-button" style="width:50px">@formula.Result</button></td>
+                }
+                else { <td></td>}
+                <td>
+                    <a href="/@localizer.CurrentLanguage/calculator/delete-formula/@formula.Id">
+                        <i class="fa fa-check fa-fw"></i> <span>@localizer["Delete"]</span>
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script>
+    var disableButton = '@ViewBag.IsRound'
+
+    $(function () {
+
+        if (disableButton === "True") {
+            $("#add-formula").prop("disabled", true);
+        }
+        else {
+             $("#add-formula").prop("disabled", false);
+        }
+
+        $('#formulaList').DataTable({
+            'ordering': false,
+            'info': true,
+            'autoWidth': true
+        });
+    });
+</script>

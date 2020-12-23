@@ -1,0 +1,116 @@
+﻿@inject CustomLocalizer localizer
+@using ProductDb.Common.Enums
+@model List<PermissionModel>
+<!-- Content Header (Page header) -->
+<section class="content-header clearfix">
+    <h1 class="pull-left">
+        Permission
+        <small>List</small>
+    </h1>
+
+    <div class="pull-right">
+        <button type="button" class="btn btn-primary" id="btnSynchronization"><span class="glyphicon glyphicon-refresh"></span> @localizer["Synchronization"] @localizer["Permissions"]</button>
+    </div>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                @localizer["Permission"] @localizer["List"]
+                            </div>
+                            <div class="panel-body">
+                                <table id="permisionList" class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>@localizer["Key"]</th>
+                                            <th>@localizer["Permission"] @localizer["Name"]</th>
+                                            <th>@localizer["Edit"]</th>
+                                            <th>@localizer["Description"]</th>
+                                            <th>@localizer["Status"]</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var user in Model)
+                                        {
+                                            <tr>
+                                                <td>@user.key</td>
+                                                <td>@user.name</td>
+                                                <td>
+                                                    <a href="/@localizer.CurrentLanguage/permission/edit/@user.Id" class="btn btn-default">
+                                                        <i class="fa fa-edit"></i> @localizer["Edit"]
+                                                    </a>
+                                                </td>
+                                                <td>@user.Description</td>
+                                                <td>
+                                                    <a href="/permission/setstate/@user.Id">
+                                                        @if (user.State == (int)State.Active)
+                                                        {
+                                                            <i class="fa fa-check fa-fw"></i> <span>@localizer["Active"]</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <i class="fa fa-close"></i> <span>@localizer["Passive"]</span>
+                                                        }
+                                                    </a>
+                                                </td>
+
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>@localizer["Key"]</th>
+                                            <th>@localizer["Permission"] @localizer["Name"]</th>
+                                            <th>@localizer["Edit"]</th>
+                                            <th>@localizer["Description"]</th>
+                                            <th>@localizer["Status"]</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    $(function () {
+        $('#permisionList').DataTable({
+            'paging': true,
+            'lengthChange': false,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            'pageLenght': 10
+        });
+
+        $("#btnSynchronization").on("click", function () {
+
+             debugger;
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/permission/synchronization",
+                dataType: "json",
+                type: "POST",
+                success: function (response) {
+                    if (response.status) {
+                        alert("Synchronization Completed.");
+                    }
+                },
+                error: function (response) {
+                    console.log(response);
+                }
+            });
+
+        })
+
+    });
+</script>

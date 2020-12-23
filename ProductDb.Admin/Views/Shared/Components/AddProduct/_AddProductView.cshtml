@@ -1,0 +1,113 @@
+﻿@inject CustomLocalizer localizer
+@model AddProductViewModel
+
+<div class="modal fade" id="modal-product" style="display: none;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="@localizer["Close"]">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title">@localizer["Products"]</h4>
+            </div>
+            <form method="post" id="addProduct" onsubmit="return false">
+                @Html.HiddenFor(model => model.StoreId)
+                <div class="modal-body">
+                    <table id="productStoreList" class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="checkAll" /></th>
+                                <th>@localizer["Picture"]</th>
+                                <th>Sku</th>
+                                <th>@localizer["Title"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            @for (int i = 0; i < Model.Products.Count; i++)
+                            {
+                            <tr>
+                                <td>@Html.CheckBoxFor(model => Model.Products[i].IsStoreCheck)</td>
+                                @Html.HiddenFor(model => Model.Products[i].Id)
+                                @if (Model.Products[i].Pictures != null && Model.Products[i].Pictures.Count > 0)
+                                {
+                                    <td><img src="@Model.Products[i].Pictures.OrderBy(x => x.Order).FirstOrDefault().CdnPath" height="100" width="100" /></td>
+                                }
+                                else
+                                {
+                                    <td>@localizer["NoImage"]</td>
+                                }
+                                <td>@Model.Products[i].Sku</td>
+                                <td>@Model.Products[i].Title</td>
+                            </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th>@localizer["Picture"]</th>
+                                <th>Sku</th>
+                                <th>@localizer["Title"]</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <div class="alert alert-danger hidden">
+                        <h4><i class="icon fa fa-ban"></i> @localizer["Attention"]</h4>
+                        @localizer["NonSelected"]
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">@localizer["Close"]</button>
+                    <button type="submit" class="btn btn-primary">@localizer["Add"]</button>
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        $('#productStoreList').DataTable({
+            'paging': true,
+            'lengthChange': true,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            'pageLenght': 100
+        });
+
+        $("#checkAll").click(function () {
+            $('input:checkbox').not(this).prop('checked', this.checked);
+        });
+
+        //Update
+        $("#addProduct").on("submit", function (event) {
+            var $this = $(this);
+            var frmValues = $this.serialize();
+            $("#cover-spin").show();
+            $.ajax({
+                cache: false,
+                type: "POST",
+                url: "/@localizer.CurrentLanguage/store/insertStoreProduct",
+                data: frmValues,
+                success: function (data) {
+                    if (data.result == 'Redirect') {
+                        $("#modal-product .close").click();
+                        $('#StoreProducts').trigger("click");
+                    }
+                    else if (data.result == 'Failed') {
+                        $('.alert-danger').removeClass('hidden');
+                    }
+                },
+                complete: function () {
+                    $("#cover-spin").hide();
+                }
+            });
+        });
+    });
+
+</script>
+

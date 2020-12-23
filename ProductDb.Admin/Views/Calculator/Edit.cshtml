@@ -1,0 +1,56 @@
+﻿@inject CustomLocalizer localizer
+@model FormulaGroupModel
+@using (Html.BeginForm("Edit", "Calculator", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.HiddenFor(model => model.ProcessedBy)
+    @Html.HiddenFor(model => model.Id)
+    @Html.HiddenFor(model => model.CreatedDate)
+    @Html.HiddenFor(model => model.State)
+    <!-- Content Header (Page header) -->
+    <section class="content-header clearfix">
+        <h1 class="pull-left">
+            @localizer["FormulaGroup"]
+            <small>@localizer["Edit"]</small>
+        </h1>
+
+        <div class="pull-right">
+            <button type="submit" name="save" class="btn bg-blue">
+                <i class="fa fa-floppy-o"></i>
+                @localizer["Edit"]
+            </button>
+            <a href="/@localizer.CurrentLanguage/calculator/list" class="btn bg-red">
+                <i class="fa fa-ban"></i>
+                @localizer["Cancel"]
+            </a>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">@localizer["Edit"] - @localizer["FormulaGroup"]</h3>
+                </div>
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    @localizer["GeneralInformation"]
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label for="FormulaGroupName">@localizer["Name"]</label>
+                                        @Html.TextBoxFor(model => model.Name, new { @class = "form-control" })
+                                        <span class="text-red">@Html.ValidationMessageFor(model => model.Name)</span>
+                                        <br />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}

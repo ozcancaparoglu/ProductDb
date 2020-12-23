@@ -1,0 +1,49 @@
+﻿@using ProductDb.Admin.PageModels.ProductVariant
+@inject CustomLocalizer localizer
+@model ChangeProductVariantViewModel
+
+<div class="modal fade" id="modal-base-products" style="display: none;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+                @Html.HiddenFor(x => x.ProductId)
+                <select class="form-control" asp-for="BaseId" asp-items="@(new SelectList(Model.Products,"Id","Title"))">
+                    <option>--@localizer["Select"]--</option>
+                </select>
+                <br />
+                <button class="btn btn-default" id="btnSave" type="button"> @localizer["Select"] </button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script>
+    $(function () {
+
+        $("#@Html.IdFor(model=>model.BaseId)").select2();
+
+        $("#btnSave").on("click", function () {
+            // prepare data
+            var data = {
+                baseId: $("#@Html.IdFor(model => model.BaseId)").val(),
+                productId: $("#@Html.IdFor(model=>model.ProductId)").val()
+            }
+            // ajax call
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/ProductVariant/SaveChangeProductVariant",
+                dataType: "json",
+                type: "POST",
+                data: data,
+                success: function (response) {
+                    alert(response.message);
+                },
+                error: function (response) {
+                    console.log(response.responseText);
+                }
+            })
+        })
+    })
+</script>
+

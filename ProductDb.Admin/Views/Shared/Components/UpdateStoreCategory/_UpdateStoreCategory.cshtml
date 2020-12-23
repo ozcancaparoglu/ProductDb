@@ -1,0 +1,142 @@
+﻿@inject CustomLocalizer localizer
+@model StoreCategoryUpdateViewModel
+
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+
+<div class="modal fade" id="modal-store-category">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="row">
+                    @Html.HiddenFor(model => model.StoreId)
+                    <div class="col-md-1">
+                        @localizer["Category"]
+                    </div>
+                    <div class="col-md-10">
+                        <select style="width:700px" asp-items="@(new SelectList(Model.Categories,"Id","CategoryNameWithParents"))" id="CategoryId">
+                            <option value="">@localizer["Select"]</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-default" id="AddCategoryToStore">
+                            @localizer["Add"]
+                        </button>
+                    </div>
+                </div>
+                <hr />
+                <div id="grid"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">@localizer["Close"]</button>
+                @*<button type="button" class="btn btn-primary">@localizer["Save"]</button>*@
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script>
+
+    var loading = $("#cover-spin");
+    var oldPageSize = 0;
+
+    $(function () {
+
+        var loading = $("#cover-spin");
+        var storeId = $("#StoreId").val();
+
+        $("#CategoryId").kendoComboBox({
+            filter: "contains",
+            suggest: true,
+            index: 3
+        });
+
+        var storeId = $("#@Html.IdFor(model => model.StoreId)").val();
+        var grid = $("#grid");
+        // load data from server
+        var loadData = function () {
+
+            var kendoData = grid.data("kendoGrid");
+
+            if (kendoData!= undefined) {
+                kendoData.destroy();
+            }
+
+            var crudServiceBaseUrl = "/@localizer.CurrentLanguage/store";
+
+            grid.kendoGrid({
+                dataSource: {
+                    pageSize: 10,
+                    transport: {
+                        read: {
+                            url: crudServiceBaseUrl + "/StoreCategoryById/" + storeId,
+                            dataType: "json"
+                        },
+                        update: {
+                            url: crudServiceBaseUrl + "/UpdateStoreCategory",
+                            dataType: "json",
+                            type: "POST"
+                         },
+                        destroy: {
+                            url: crudServiceBaseUrl + "/DeleteStoreCategory",
+                            dataType: "json",
+                            type: "POST"
+                         }
+                    },
+                    schema: {
+                        model: {
+                            id: "id",
+                            "category.categoryNameWithParents": { editable: false },
+                            //"store.name": { editable: false },
+                            "erpCategoryId": { editable: true },
+                        }
+                    }
+                },
+                pageable: true,
+                scrollable: false,
+                persistSelection: true,
+                sortable: true,
+                filterable: {
+                    mode: "row"
+                },
+                columns: [
+                {
+                    field: "category.categoryNameWithParents",
+                    title: "Category Name"
+                },
+                {
+                    field: "erpCategoryId",
+                    title: "ERP Category ID"
+                },
+                { command: ["edit", "destroy"], title: "&nbsp;", width: "250px" } ],
+                editable: "inline"
+            });
+        }
+
+        loadData();
+
+        $("#AddCategoryToStore").on("click", function () {
+
+            var data = {
+                StoreId : $("#@Html.IdFor(model=> model.StoreId)").val(),
+                CategoryId : $("#CategoryId").val(),
+                ErpCategoryId: 0
+            };
+
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/store/AddStoreCategory",
+                type: "POST",
+                data: data,
+                dataType: "json",
+                success: function (response) {
+                    loadData();
+                },
+                error: function (response) {
+                    console.log(response);
+                }
+            })
+
+        })
+    })
+</script>

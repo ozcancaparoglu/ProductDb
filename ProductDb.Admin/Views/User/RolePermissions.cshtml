@@ -1,0 +1,75 @@
+﻿@using ProductDb.Admin.PageModels.RolePermission
+@model RolePermissionViewModel
+
+@inject CustomLocalizer localizer
+
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+<!-- Content Header (Page header) -->
+<section class="content-header clearfix">
+    <div class="col-md-1">
+        <label>@localizer["User"] @localizer["Role"]</label> :
+    </div>
+    <div class="col-md-3">
+        <select id="UserRole" class="form-control" asp-items="@(new SelectList(Model.UserRoleModels,"Id","Name"))">
+            <option>--@localizer["Select"]--</option>
+        </select>
+    </div>
+</section>
+
+<section class="content">
+    <div class="row">
+
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="RolePermissionList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+
+    function GetUserRoles(id) {
+
+         var loader = $("#cover-spin");
+         var list = $(".RolePermissionList");
+         list.html('');
+            var url = "/@localizer.CurrentLanguage/User/GetUserRoles/" + id;
+            $.ajax({
+                cache: false,
+                async: true,
+                url: url,
+                dataType: "html",
+                type: "GET",
+                beforeSend: function () {
+                    loader.show();
+                },
+                success: function (response) {
+                    list.html(response);
+                },
+                error: function (response) {
+                    alert(response.responseText);
+                },
+                complete: function () {
+                    loader.hide();
+                }
+            })
+        }
+
+    $(function () {
+
+        $("#UserRole").on("change", function () {
+            var id = $(this).val();
+            GetUserRoles(id);
+        })
+    });
+</script>

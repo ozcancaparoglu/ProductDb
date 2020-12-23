@@ -1,0 +1,88 @@
+﻿@inject CustomLocalizer localizer
+
+<section class="content-header clearfix">
+    <h1 class="pull-left">
+        @localizer["Warehouses"]  @localizer["Products"]  @localizer["List"]
+        <small> @localizer["Info"]</small>
+    </h1>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                @localizer["Warehouses"]  @localizer["Products"]  @localizer["List"]
+                            </div>
+                            <div id="warehouseStockList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    $(function () {
+
+        var getStocks = function () {
+
+            var grid = $("#warehouseStockList").data("kendoGrid");
+            if (grid != undefined) {
+                grid.destroy();
+            }
+
+            $("#warehouseStockList").kendoGrid({
+                toolbar: ["excel"],
+                excel: {
+                    fileName: "WarehouseProductList.xlsx",
+                    proxyURL: "https://demos.telerik.com/kendo-ui/service/export",
+                    filterable: true,
+                    allPages: false
+                },
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "/@localizer.CurrentLanguage/warehouse/get-all-warehouseStockList/",
+                            dataType: "json",
+                            type: "POST"
+                        }
+                    },
+                    schema: {
+                        total: "total", // total is returned in the "total" field of the response
+                        data: "data", // records are returned in the "data" field of the response
+                        model: { id: "id" }
+                    },
+
+                    pageSize: 100,
+                    serverPaging: true,
+                    serverFiltering: true,
+                    serverSorting: true
+                },
+                height: 900,
+                sortable: true,
+                groupable: true,
+                filterable: {
+                    mode: "row"
+                },
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 5
+                },
+                resizable: true,
+                columns: [
+                    { field: "sku", title: "@localizer["Sku"]" },
+                    { field: "productName", title: "@localizer["Product"] @localizer["Name"]" },
+                    { field: "name", title: "@localizer["Warehouse"] @localizer["Name"]" },
+                    { field: "quantity", title: "@localizer["Quantity"]" },
+                ]
+            });
+        }
+
+        getStocks();
+    });
+</script>

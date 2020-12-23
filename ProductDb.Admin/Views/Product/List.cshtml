@@ -1,0 +1,615 @@
+﻿@inject CustomLocalizer localizer
+@model ParentProductSearchView
+
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+
+<section class="content-header clearfix">
+    <h1 class="pull-left">
+        @localizer["Product"]
+        <small>@localizer["List"]</small>
+    </h1>
+
+    <div class="pull-right">
+        <button id="deleteFromStore" type="button" class="btn btn-default" data-toggle="modal" data-target="#modal-delete-from-store">
+            <i class="fa fa-backward"></i> @localizer["UnTag"]
+        </button>
+        <button id="addToStore" type="button" class="btn btn-default" data-toggle="modal" data-target="#modal-add-to-store">
+            <i class="fa fa-forward"></i> @localizer["Tag"]
+        </button>
+        <button type="button" class="btn bg-blue" data-toggle="modal" data-target="#modal-add-product">
+            <i class="fa fa-plus"></i> @localizer["AddNew"] @localizer["Product"]
+        </button>
+    </div>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                @localizer["Product"] @localizer["List"]
+                            </div>
+                            <div class="panel-body">
+                                <div id="allProductListOrdered"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="modal-product-parent" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title">@localizer["Parent"]</h4>
+            </div>
+            <form method="post" id="editParent" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" id="productId" name="ProductId" />
+                    <div class="form-group">
+                        <label>@localizer["Parent"] @localizer["Product"]</label>
+                        <select class="form-control select2" name="ParentProductId" id="parentId">
+                            @foreach (var parentProduct in Model.ParentProducts)
+                            {
+                                <option value="@parentProduct.Id">@parentProduct.Sku - @parentProduct.Title</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="alert alert-danger hidden" id="productParent-edit-alert">
+                        <h4><i class="icon fa fa-ban"></i> @localizer["Attention"]</h4>
+                        <span>@localizer["ItContact"]</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">@localizer["Close"]</button>
+                    <button type="submit" class="btn btn-primary">@localizer["Change"]</button>
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-add-product" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title">@localizer["Select"] @localizer["Parent"] @localizer["Product"]</h4>
+            </div>
+            <form method="post" id="addProductParent" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>@localizer["Parent"] @localizer["Product"]</label>
+                        <select class="form-control select2" name="AddParentProductId" id="addParentId">
+                            @foreach (var parentProduct in Model.ParentProducts)
+                            {
+                                <option value="@parentProduct.Id">@parentProduct.Sku - @parentProduct.Title</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="alert alert-danger hidden" id="addProductParent-alert">
+                        <h4><i class="icon fa fa-ban"></i> @localizer["Attention"]</h4>
+                        <span>@localizer["ItContact"]</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">@localizer["Close"]</button>
+                    <button type="submit" class="btn btn-primary">@localizer["Select"] @localizer["Parent"]</button>
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-add-to-store" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title">@localizer["Store"] @localizer["Product"]</h4>
+            </div>
+            <div class="modal-body">
+                <div id="allStoreList"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">@localizer["Close"]</button>
+                <button type="button" id="addToStoreFormButton" class="btn btn-primary">@localizer["Save"]</button>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+</div>
+
+
+<div class="modal fade" id="modal-delete-from-store" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title">@localizer["Store"] @localizer["Product"]</h4>
+            </div>
+            <div class="modal-body">
+                <div id="allDeleteStoreList"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">@localizer["Close"]</button>
+                <button type="button" id="deleteFromStoreFormButton" class="btn btn-primary">@localizer["Save"]</button>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+</div>
+
+
+<script id="imgTemplate" type="text/x-kendo-tmpl">
+
+    # if(data.firstPicturePath == null || data.firstPicturePath == "")
+    {#
+    <small>@localizer["NoImage"]</small> #}
+
+    else{#
+    <img src="#:data.firstPicturePath#" width="50" height="50" /> #}#
+
+</script>
+
+<script id="editProduct" type="text/x-kendo-tmpl">
+    <a href="/@localizer.CurrentLanguage/products/edit/#:data.id#" target="_blank" class="btn btn-default">
+        <i class="fa fa-edit"></i>
+    </a>
+</script>
+
+<script>
+    //Kendo Template altında herhangi bir tuşa ajax call atamıyorsun. O yüzden önceden tanımlamak gerekiyordu bu fonksiyonu
+    function DeleteProduct(e) {
+
+        var loading = $("#cover-spin");
+        var productId = $(e).attr("data-id");
+
+        bootbox.confirm({
+            message: "Ürünün etiketleri, resimleri cisimleri, her birşeyi silinecektir onaylıyor musunuz?",
+            buttons: {
+                confirm: {
+                    label: 'Evet',
+                    className: 'btn-success'
+                },
+                cancel: {
+                    label: 'Hayır',
+                    className: 'btn-danger'
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    // ajax call
+                    $.ajax({
+                        url: "/@localizer.CurrentLanguage/products/delete/" + productId,
+                        dataType: "json",
+                        type: "POST",
+                        cache: false,
+                        async: true,
+                        beforeSend: function () {
+                            loading.show();
+                        },
+                        success: function (response) {
+                            alert(response.message + " sayfayı yenileyiniz(refresh the page).");
+                        },
+                        error: function (response) {
+                            loading.show();
+                            alert(response.message);
+                        },
+                        complete: function () {
+                            loading.hide();
+                        }
+                    })
+                }
+            }
+        });
+    }
+
+    function StateProduct(e) {
+
+        var loading = $("#cover-spin");
+        var productId = $(e).attr("data-id");
+
+        bootbox.confirm({
+            message: "Ürünün durumu değiştirelecektir onaylıyor musunuz?",
+            buttons: {
+                confirm: {
+                    label: 'Evet',
+                    className: 'btn-success'
+                },
+                cancel: {
+                    label: 'Hayır',
+                    className: 'btn-danger'
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    // ajax call
+                    $.ajax({
+                        url: "/@localizer.CurrentLanguage/products/change-state/" + productId,
+                        dataType: "json",
+                        type: "POST",
+                        cache: false,
+                        async: true,
+                        beforeSend: function () {
+                            loading.show();
+                        },
+                        success: function (response) {
+                            alert(response.message + " sayfayı yenileyiniz(refresh the page).");
+                        },
+                        error: function (response) {
+                            loading.show();
+                            alert(response.message);
+                        },
+                        complete: function () {
+                            loading.hide();
+                        }
+                    })
+                }
+            }
+        });
+
+
+
+    }
+</script>
+
+<script id="deleteProduct" type="text/x-kendo-tmpl">
+    <a data-id="#:data.id#" class="btn btn-danger" onclick="DeleteProduct(this)">
+        <i class="fa fa-ban"></i>
+    </a>
+</script>
+
+<script id="stateProduct" type="text/x-kendo-tmpl">
+    <a data-id="#:data.id#" class="btn btn-default" onclick="StateProduct(this)">
+        #if(data.state == 1){#
+            Aktif
+        #}else{#
+            Pasif
+        #}#
+    </a>
+</script>
+
+<script id="changeParent" type="text/x-kendo-tmpl">
+    <button type="button" class="btn btn-info" data-toggle="modal" data-id="#:data.id#" data-parent="#:data.parentProductId#" data-target="\\#modal-product-parent">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+</script>
+
+<script>
+    $(function () {
+
+        $('.select2').select2();
+
+        var selected = [];
+        var storeSelected = [];
+        var deleteStoreSelected = []; //Sonra buraya bak kod tekrarı var.
+
+        var allProductList = $("#allProductListOrdered");
+        var allStoreList = $('#allStoreList');
+        var allDeleteStoreList = $('#allDeleteStoreList');
+        var loading = $("#cover-spin");
+
+        var getStores = function () {
+            var gridstores = allStoreList.data("kendoGrid");
+            var deleteGridStores = allDeleteStoreList.data("kendoGrid");
+            if (gridstores != undefined) {
+                gridstores.destroy();
+            }
+            if (deleteGridStores != undefined) {
+                deleteGridStores.destroy();
+            }
+
+            allStoreList.kendoGrid({
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "/@localizer.CurrentLanguage/products/get-all-stores/",
+                            dataType: "json",
+                            type: "POST"
+                        }
+                    },
+                    schema: {
+                        total: "totalStore",
+                        data: "data", // records are returned in the "data" field of the response
+                        model: { id: "id" }
+                    },
+                    pageSize: 15,
+                },
+                filterable: {
+                    mode: "row"
+                },
+                sortable: true,
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 5
+                },
+                resizable: true,
+                 columns: [
+                    { selectable: true, width: 30},
+                    { field: "name", title: "@localizer["Name"]" },
+                    { field: "storeTypeString", title: "@localizer["StoreType"]"}
+                ]
+            });
+
+            allDeleteStoreList.kendoGrid({
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "/@localizer.CurrentLanguage/products/get-all-stores/",
+                            dataType: "json",
+                            type: "POST"
+                        }
+                    },
+                    schema: {
+                        total: "totalStore",
+                        data: "data", // records are returned in the "data" field of the response
+                        model: { id: "id" }
+                    },
+                    pageSize: 15,
+                },
+                filterable: {
+                    mode: "row"
+                },
+                sortable: true,
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 5
+                },
+                resizable: true,
+                 columns: [
+                    { selectable: true, width: 30},
+                    { field: "name", title: "@localizer["Name"]" },
+                    { field: "storeTypeString", title: "@localizer["StoreType"]"}
+                ]
+            });
+        }
+
+        var getProducts = function () {
+
+            var grid = allProductList.data("kendoGrid");
+            if (grid != undefined) {
+                grid.destroy();
+            }
+
+            allProductList.kendoGrid({
+                toolbar: ["excel"],
+                excel: {
+                    filterable: true
+                },
+                excelExport: function(e) {
+                    e.workbook.fileName = "ProductListOrdered.xlsx";
+                },
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "/@localizer.CurrentLanguage/products/get-all-products/",
+                            dataType: "json",
+                            type: "POST"
+                        }
+                    },
+                    schema: {
+                        total: "total", // total is returned in the "total" field of the response
+                        data: "data", // records are returned in the "data" field of the response
+                        model: {
+                            id: "id"
+                        }
+                    },
+                    pageSize: 500,
+                    serverPaging: true,
+                    serverFiltering: true,
+                    serverSorting: true
+                },
+                height: 1000,
+                filterable: {
+                    mode: "row"
+                },
+                groupable: true,
+                sortable: true,
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 5
+                },
+                resizable: true,
+
+                columns: [
+                    { selectable: true, width: 20 },
+                    { field: "firstPicturePath", title: "@localizer["Picture"]", template: kendo.template($("#imgTemplate").html()), width: 30, filterable: false },
+                    { field: "sku", title: "@localizer["Sku"]", width: 75 },
+                    { hidden: true, field: "barcode", title: "@localizer["Barcode"]" },
+                    { field: "name", title: "@localizer["Name"]", width: 120 },
+                    { field: "brndName", title: "@localizer["Brand"]", width: 60 },
+                    { field: "parentProductName", title: "@localizer["Parent"] @localizer["Product"]", width: 120},
+                    { field: "", title: "@localizer["Change"]", template: kendo.template($("#changeParent").html()), width: 30},
+                    { hidden: true, field: "shortDescription", title: "@localizer["ShortDescription"]" },
+                    { hidden: true, field: "description", title: "@localizer["Description"]" },
+                    //{ field: "desi", title: "Desi" , filterable: false, width: 20 },
+                    { field: "buyingPrice", title: "@localizer["BuyingPrice"]", filterable: false, width: 30 },
+                    { field: "currName", title: "@localizer["Currency"]", filterable: false, width: 30 },
+                    { field: "psfPrice", title: "@localizer["MarketPrice"]", filterable: false, width: 30 },
+                    { field: "psfCurrName", title: "@localizer["Currency"]", filterable: false, width: 30 },
+                    { field: "corporatePrice", title: "@localizer["CorporatePrice"]", filterable: false, width: 30},
+                    { field: "corCurrName", title: "@localizer["Currency"]", filterable: false, width: 30 },
+                    { hidden: true, field: "vatRateAmount", title: "@localizer["VatRate"]"},
+                    { field: "", title: "@localizer["Edit"]", template: kendo.template($("#editProduct").html()), width: 30 },
+                    { field: "", title: "@localizer["State"]", template: kendo.template($("#stateProduct").html()), width: 30 },
+                    { field: "", title: "@localizer["Delete"]", template: kendo.template($("#deleteProduct").html()), width: 30 }
+
+
+                ]
+            });
+
+            var exportFlag = false;
+            allProductList.data("kendoGrid").bind("excelExport", function (e) {
+                loading.show();
+
+                var columns = e.sender.columns;
+                var excelColumns = new Array();
+                if (!exportFlag) {
+                    for (var i = 0; i < columns.length; i++) {
+                        if (columns[i].hidden) {
+                            e.sender.showColumn(i);
+                            excelColumns.push(i);
+                        }
+                    }
+                    e.preventDefault();
+
+                    exportFlag = true;
+
+                    setTimeout(function () {
+                        e.sender.saveAsExcel();
+                    });
+                }
+                else
+                {
+                    getProducts();
+                }
+                loading.hide();
+            });
+        }
+
+        loading.show();
+        getProducts();
+        getStores();
+        loading.hide();
+
+        $("#addToStore").on('click', function () {
+            selected = [];
+            var grid = $("#allProductListOrdered").data("kendoGrid");
+            grid.select().each(function () {
+                selected.push(grid.dataItem(this).id);
+            });
+        });
+
+        $("#addToStoreFormButton").on("click", function () {
+            storeSelected = [];
+            var grid2 = $("#allStoreList").data("kendoGrid");
+            grid2.select().each(function () {
+                storeSelected.push(grid2.dataItem(this).id);
+            });
+            loading.show();
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/products/insertStoreProduct",
+                type: 'POST',
+                data: { storeIds: storeSelected, productIds: selected },
+                cache: false,
+                success: function (data) {
+                    if (data.success)
+                        window.location = data.url;
+                    else
+                        $('#productParent-edit-alert').removeClass('hidden');
+                }
+            });
+        });
+
+         $("#deleteFromStore").on('click', function () {
+            selected = [];
+            var grid = $("#allProductListOrdered").data("kendoGrid");
+            grid.select().each(function () {
+                selected.push(grid.dataItem(this).id);
+            });
+        });
+
+        $("#deleteFromStoreFormButton").on("click", function () {
+            deleteStoreSelected = [];
+            var grid3 = $("#allDeleteStoreList").data("kendoGrid");
+            grid3.select().each(function () {
+                deleteStoreSelected.push(grid3.dataItem(this).id);
+            });
+            loading.show();
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/products/deleteStoreProduct",
+                type: 'POST',
+                data: { storeIds: deleteStoreSelected, productIds: selected },
+                cache: false,
+                success: function (data) {
+                    if (data.success)
+                        window.location = data.url;
+                    else
+                        $('#productParent-edit-alert').removeClass('hidden');
+                }
+            });
+        });
+
+
+
+
+        $('#modal-product-parent').on('show.bs.modal', function (e) {
+
+            //get data-id attribute of the clicked element
+            var productId = $(e.relatedTarget).data('id');
+            var parentProductId = $(e.relatedTarget).data('parent');
+
+            //populate the textbox
+            $(e.currentTarget).find('input[name="ProductId"]').val(productId);
+            $(e.currentTarget).find('select option[value=' + parentProductId + ']').attr('selected', 'selected').change();
+        });
+
+        $("form#editParent").submit(function (e) {
+
+            e.preventDefault();
+            var productId = $('#productId').val();
+            var parentId = $('#parentId').val();
+
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/products/edit-parent",
+                type: 'POST',
+                data: { productId: productId, parentProductId: parentId },
+                cache: false,
+                success: function (data) {
+                    if (data.success)
+                        window.location = data.url;
+                    else
+                        $('#productParent-edit-alert').removeClass('hidden');
+                }
+            });
+        });
+
+        $("form#addProductParent").submit(function (e) {
+
+            e.preventDefault();
+            var parentId = $('#addParentId').val();
+
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/products/add-parent",
+                type: 'POST',
+                data: { parentProductId: parentId },
+                cache: false,
+                success: function (data) {
+                    if (data.success)
+                        window.location = data.url;
+                    else
+                        $('#addProductParent-alert').removeClass('hidden');
+                }
+            });
+        });
+
+
+    });
+</script>
+

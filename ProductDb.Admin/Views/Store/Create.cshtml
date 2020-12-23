@@ -1,0 +1,168 @@
+﻿@inject CustomLocalizer localizer
+@model StoreViewModel
+@using (Html.BeginForm("Create", "Store", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    <!-- Content Header (Page header) -->
+    <section class="content-header clearfix">
+        <h1 class="pull-left">
+            @localizer["Store"]
+            <small>@localizer["Create"]</small>
+        </h1>
+
+        <div class="pull-right">
+            <button type="submit" name="save" class="btn bg-blue">
+                <i class="fa fa-floppy-o"></i>
+                @localizer["Save"]
+            </button>
+            <a href="/@localizer.CurrentLanguage/store/list" class="btn bg-red">
+                <i class="fa fa-ban"></i>
+                @localizer["Cancel"]
+            </a>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">@localizer["AddNew"] @localizer["Store"]</h3>
+                </div>
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    @localizer["GeneralInformation"]
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label for="storeName">@localizer["Name"]</label>
+                                        @Html.TextBoxFor(model => model.Store.Name, new { @class = "form-control", placeholder = "Enter store name" })
+                                        <span class="text-red">@Html.ValidationMessageFor(model => model.Store.Name)</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>@localizer["Currency"]</label>
+                                        @Html.DropDownListFor(model => model.Store.CurrencyId, new SelectList(Model.Currencies.ToList(), "Id", "Abbrevation"), new { @class = "form-control select2" })
+                                    </div>
+                                    <div class="form-group">
+                                        <label>@localizer["Formula"]</label>
+                                        @Html.DropDownListFor(model => model.Store.FormulaGroupId, new SelectList(Model.FormulaGroups.ToList(), "Id", "Name"), localizer["Select"], new { @class = "form-control select2" })
+                                    </div>
+                                    <div class="form-group">
+                                        <label>@localizer["StoreType"]</label>
+                                        @Html.DropDownListFor(model => model.Store.StoreTypeId, new SelectList(Model.StoreTypes.ToList(), "Id", "Name"), localizer["Select"], new { @class = "form-control select2" })
+                                    </div>
+                                    <div class="form-group">
+                                        <label>@localizer["CargoType"]</label>
+                                        @Html.DropDownListFor(model => model.Store.CargoTypeId, new SelectList(Model.CargoTypes.ToList(), "Id", "Name"), localizer["Select"], new { @class = "form-control select2" })
+                                    </div>
+                                    <div class="form-group">
+                                        <label>@localizer["CargoCurrency"]</label>
+                                        @Html.DropDownListFor(model => model.Store.CargoCurrencyId, new SelectList(Model.Currencies.ToList(), "Id", "Abbrevation"), new { @class = "form-control select2" })
+                                    </div>
+                                    <div class="form-group">
+                                        <label>@localizer["MinStock"]</label>
+                                        @Html.TextBoxFor(model => model.Store.MinStock, new { @class = "form-control", @type = "number", @min = 0 })
+                                    </div>
+                                    <div class="form-group">
+                                        <label>@localizer["MaxStock"]</label>
+                                        @Html.TextBoxFor(model => model.Store.MaxStock, new { @class = "form-control", @type = "number", @min = 0 })
+                                    </div>
+                                    <div class="form-group">
+                                        <label>@localizer["MinPrice"]</label>
+                                        @Html.TextBoxFor(model => model.Store.MinPriceString, new { @class = "form-control maskedInput" })
+                                    </div>
+                                    <div class="form-group">
+                                        <label>@localizer["MaxPrice"]</label>
+                                        @Html.TextBoxFor(model => model.Store.MaxPriceString, new { @class = "form-control maskedInput" })
+                                    </div>
+                                    <div class="form-group">
+                                        <label>@localizer["MaxPoint"]</label>
+                                        @Html.TextBoxFor(model => model.Store.MaxPoint, new { @class = "form-control", @type = "number", @min = 0 })
+                                    </div>
+                                    <div class="form-group">
+                                        <label>@localizer["Rate"]</label>
+                                        @Html.TextBoxFor(model => model.Store.RateString, new { @class = "form-control maskedInput" })
+                                    </div>
+                                    <div class="form-group">
+                                        <label>@localizer["DefaultMarj"]</label>
+                                        @Html.TextBoxFor(model => model.Store.DefaultMarjString, new { @class = "form-control maskedInput" })
+                                    </div>
+                                    <div class="form-group">
+                                        <label>@localizer["Sarf"]</label>
+                                        @Html.TextBoxFor(model => model.Store.SarfString, new { @class = "form-control maskedInput" })
+                                    </div>
+                                    <div class="form-group">
+                                        <label>@localizer["ProjectCode"]</label>
+                                        @Html.TextBoxFor(model => model.Store.ProjectCode, new { @class = "form-control" })
+                                    </div>
+                                    <div class="form-group">
+                                        <label>@localizer["Firm"]</label>
+                                        @Html.DropDownListFor(model => model.Store.ErpCompanyId, new SelectList(Model.ErpCompanies, "Id", "FirmName"), "--Select--", new { @class = "form-control select2" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    @localizer["Warehouses"]
+                                </div>
+                                <div class="panel-body">
+                                    <table id="warehouseList" class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>@localizer["Warehouse"] @localizer["Name"]</th>
+                                                <th>@localizer["Calculate"]</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            @for (int i = 0; i < Model.Warehouses.Count(); i++)
+                                            {
+                                                <tr>
+                                                    @Html.HiddenFor(model => model.Warehouses[i].Id)
+                                                    <td>@Model.Warehouses[i].Name</td>
+                                                    <td>@Html.CheckBoxFor(model => model.Warehouses[i].IsSelected)</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th>@localizer["Warehouse"] @localizer["Name"]</th>
+                                                <th>@localizer["Calculate"]</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+<script>
+    $(function () {
+        $('.select2').select2();
+
+        $('#warehouseList').DataTable({
+            'paging': true,
+            'lengthChange': true,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            'pageLenght': 100
+        });
+        // for masking
+         $(".maskedInput").inputmask({
+            'alias': 'decimal',
+            'rightAlign': false,
+            'groupSeparator': '.',
+            'autoGroup': true,
+            'radixPoint': ','
+        });
+    });
+</script>

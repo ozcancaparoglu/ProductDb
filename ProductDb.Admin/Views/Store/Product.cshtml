@@ -1,0 +1,393 @@
+﻿@using ProductDb.Admin.Helpers
+@inject CustomLocalizer localizer
+@model StoreProductViewModel
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title">@localizer["Search"] @localizer["Store"] @localizer["Products"]</h3>
+            </div>
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                @localizer["Search"] @localizer["Products"]
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label>@localizer["Stores"] </label>
+                                    @Html.DropDownListFor(model => model.StoreId, new SelectList(Model.Stores, "Id", "Name"), localizer["Select"], new { @class = "form-control select2" })
+                                </div>
+                            </div>
+
+                            <div class="panel-footer">
+                                <button type="button" name="StoreProducts" id="StoreProducts" class="btn bg-blue">
+                                    <i class="fa fa-search"></i>
+                                    @localizer["Search"]
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title">@Model.Store.Name</h3>
+                <div class="pull-left">
+                    @if (localizer.CurrentLanguage == "en")
+                    {
+                        <button type="button" id="storeProductCalculation" class="btn bg-blue" style="display:none">
+                            <i class="fa fa-calculator"></i> @localizer["Calculate"] @localizer["Prices"]
+                        </button>
+                    }
+                    <button type="button" id="syncCategories" class="btn bg-info" style="display:none">
+                        <i class="fa fa-refresh"></i> @localizer["Sync"] @localizer["Categories"]
+                    </button>
+                    <div class="btn-group">
+                        <button type="button" id="storeProductCopy" class="btn btn-default btn-flat" style="display:none"><i class="fa fa-copy"></i> @localizer["Product"] @localizer["Copy"]</button>
+                        <button type="button" class="btn btn-default btn-flat dropdown-toggle storeProductCopy" data-toggle="dropdown" aria-expanded="false" style="display:none">
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a class="settingCopy" data-id="@( (int) StoreCopyTypeEnum.Category )" data-name="@Enum.GetName(typeof(StoreCopyTypeEnum),(int)StoreCopyTypeEnum.Category)">@localizer["Category"] @localizer["Copy"]</a></li>
+                            <li class="divider"></li>
+                            <li><a class="settingCopy" data-id="@( (int) StoreCopyTypeEnum.Margin )" data-name="@Enum.GetName(typeof(StoreCopyTypeEnum),(int)StoreCopyTypeEnum.Margin)">@localizer["Marjin"]  @localizer["Copy"]</a></li>
+                            <li><a class="settingCopy" data-id="@( (int) StoreCopyTypeEnum.Cargo )" data-name="@Enum.GetName(typeof(StoreCopyTypeEnum),(int)StoreCopyTypeEnum.Cargo)">@localizer["Cargo"]  @localizer["Copy"]</a></li>
+                            <li><a class="settingCopy" data-id="@( (int) StoreCopyTypeEnum.Transportation )" data-name="@Enum.GetName(typeof(StoreCopyTypeEnum),(int)StoreCopyTypeEnum.Transportation)">@localizer["Transportation"]  @localizer["Copy"]</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="pull-right">
+                    <button type="button" id="addStoreCategory" class="btn btn-default" style="display:none">
+                        <i class="fa fa-map-o"></i> @localizer["Add"] @localizer["Category"]
+                    </button>
+                    <button type="button" id="addProductButton" class="btn bg-blue" data-toggle="modal" data-target="#modal-product" style="display:none">
+                        <i class="fa fa-plus"></i> @localizer["Add"] @localizer["Product"]
+                    </button>
+                </div>
+            </div>
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div id="gridStoreProducts"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<div id="ModalContent"></div>
+
+@if (!string.IsNullOrWhiteSpace(ViewBag.NoResultFound))
+{
+    <section class="content">
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="alert alert-warning">
+                                <h4><i class="icon fa fa-warning"></i> @ViewBag.NoResultFound</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+<!-- Page script -->
+<script>
+    $(function () {
+
+         var ModalContent = $("#ModalContent");
+         var loading = $("#cover-spin");
+         var grid = $("#gridStoreProducts");
+
+         var getStoreProducts = function (selected) {
+
+             var crudServiceBaseUrl = "/@localizer.CurrentLanguage/store";
+             var kendoData = grid.data("kendoGrid");
+
+             if (kendoData!= undefined) {
+                kendoData.destroy();
+             }
+
+             dataSource = new kendo.data.DataSource({
+                            transport: {
+                                read:  {
+                                    url: crudServiceBaseUrl + "/StoreProdocuts/" + selected,
+                                    dataType: "json",
+                                    type: "GET"
+                                },
+                                update: {
+                                    url: crudServiceBaseUrl + "/StoreProduct-Update",
+                                    dataType: "json",
+                                    type: "POST"
+                                },
+                                destroy: {
+                                    url: crudServiceBaseUrl + "/StoreProduct-Delete",
+                                    dataType: "json",
+                                    type: "POST"
+                                }
+                            },
+                            pageSize: 100,
+                            schema: {
+                                model: {
+                                    id: "id",
+                                    fields: {
+                                        id: { editable: false, nullable: true },
+                                        "product.sku": { editable: false },
+                                        "product.barcode": { editable: false },
+                                        "categoryWithParents": { editable: false },
+                                        "storeCategory": { editable: true, validation: { required: true } },
+                                        "product.title": { editable: false },
+                                        "parentProductSku": { editable: false },
+                                        "stock": { editable: false },
+                                        "price": { editable: false },
+                                        "store.currency.abbrevation": { editable: false }
+                                    }
+                                }
+                            }
+             });
+             grid.kendoGrid({
+                 dataSource: dataSource,
+                 toolbar: ["excel"],
+                 excel: {
+                    fileName: "StoreProductList.xlsx",
+                    proxyURL: "https://demos.telerik.com/kendo-ui/service/export",
+                    filterable: true,
+                    allPages: true
+                 },
+                 pageable: true,
+                 height: 900,
+                 groupable: true,
+                 filterable: {
+                     mode: "row"
+                 },
+                 columns: [
+                 { field: "id", title: "MapId", filterable:false },
+                 { field: "product.sku", title: "Sku" },
+                 { field: "product.barcode", title: "Barcode"},
+                 { field: "categoryWithParents", title: "Parent Category" },
+                 { field: "storeCategory", title: "Store Category" },
+                 { field: "product.title", title: "Title" },
+                 { field: "parentProductSku", title: "Parent Product Sku" },
+                 { field: "stock", title: "Stok" },
+                 { field: "price", title: "Fiyat" },
+                 { field: "store.currency.abbrevation", title: "Currency", filterable: false },
+                 { command: ["edit", "destroy"], title: "&nbsp;", width: "250px" } ],
+                 editable: "inline"
+             });
+         }
+
+        $("#StoreProducts").on("click", function () {
+            var selectedId = $("#@Html.IdFor(model => model.StoreId)").val();
+            if (selectedId == "" || selectedId == undefined) {
+                alert("Seçim Yapmadınız");
+                return;
+            }
+            getStoreProducts(selectedId);
+            $("#storeProductCalculation").show();
+            $("#storeProductCopy").show();
+            $(".storeProductCopy").show();
+            $("#addStoreCategory").show();
+            $("#addProductButton").show();
+            $("#syncCategories").show();
+        });
+
+        $('.select2').select2();
+
+        // Get Copy Page From Server
+        $("#storeProductCopy").click(function () {
+            // loading Panel
+            loading.show();
+            ModalContent.empty();
+            // currentStoreId
+            var currentStoreId = $("#StoreId").val();
+            // ajax call
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/store/storeReadyCopyProducts/" + currentStoreId,
+                dataType: "html",
+                type: "GET",
+                cache: false,
+                async: true,
+                success: function (response) {
+                    ModalContent.html(response);
+                    var modal = $("#modal-store-copy");
+                    modal.modal('show');
+                },
+                error: function (response) {
+                    console.log(response.responseText);
+                },
+                complete: function () {
+                    loading.hide();
+                }
+            });
+        });
+
+        //CategoryCopy
+        $(".settingCopy").click(function () {
+            // loading Panel
+            loading.show();
+            ModalContent.empty();
+            // currentStoreId
+            var currentStoreId = $("#StoreId").val();
+            var copySettingType = $(this).attr("data-id");
+            var copySettingName = $(this).attr("data-name");
+            // ajax call
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/store/storeReadyCopySettings/" + currentStoreId + "/" + copySettingType + "/" + copySettingName,
+                dataType: "html",
+                type: "GET",
+                cache: false,
+                async: true,
+                success: function (response) {
+                    ModalContent.html(response);
+                    var modal = $("#modal-store-copy");
+                    modal.modal('show');
+                },
+                error: function (response) {
+                    console.log(response.responseText);
+                },
+                complete: function () {
+                    loading.hide();
+                }
+            });
+        });
+
+        $("#addProductButton").click(function () {
+            // loading Panel
+            loading.show();
+            ModalContent.empty();
+            // currentStoreId
+            var currentStoreId = $("#StoreId").val();
+            // ajax call
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/store/add-product-component/" + currentStoreId,
+                dataType: "html",
+                type: "GET",
+                cache: false,
+                async: true,
+                success: function (response) {
+                    ModalContent.html(response);
+                    var modal = $("#modal-product");
+                    modal.modal('show');
+                },
+                error: function (response) {
+                    console.log(response.responseText);
+                },
+                complete: function () {
+                    loading.hide();
+                }
+            });
+        });
+
+        $("#addStoreCategory").click(function () {
+
+            // loading Panel
+            loading.show();
+            ModalContent.empty();
+            // currentStoreId
+            var currentStoreId = $("#StoreId").val();
+            // ajax call
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/store/StoreCategory/" + currentStoreId,
+                dataType: "html",
+                type: "GET",
+                cache: false,
+                async: true,
+                success: function (response) {
+                    ModalContent.html(response);
+                    var modal = $("#modal-store-category");
+                    modal.modal('show');
+                    modal.on('hidden.bs.modal', function () {
+                        var selectedId = $("#@Html.IdFor(model => model.StoreId)").val();
+                        getStoreProducts(selectedId);
+                    })
+                },
+                error: function (response) {
+                    console.log(response.responseText);
+                },
+                complete: function () {
+                    loading.hide();
+                }
+            });
+
+
+        })
+
+        $("#storeProductCalculation").click(function () {
+            // loading Panel
+            loading.show();
+            // currentStoreId
+            var currentStoreId = $("#StoreId").val();
+            // ajax call
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/calculator/calculate-store/" + currentStoreId,
+                dataType: "json",
+                type: "POST",
+                cache: false,
+                success: function (data) {
+                    if (data.result == "success") {
+                        alert("Fiyatlar Başarıyla Güncellendi");
+                        $("#StoreProducts").trigger("click");
+                    }
+                    else {
+                        alert("Bir sorun oluştu! IT ekibiyle iletişime geçiniz.");
+                        console.log(data.message);
+                    }
+                },
+                error: function () {
+                    alert("Bir sorun oluştu! IT ekibiyle iletişime geçiniz.")
+                    console.log(data.message);
+                },
+                complete: function () {
+                    loading.hide();
+                }
+            });
+        })
+
+        $("#syncCategories").click(function () {
+            // loading Panel
+            loading.show();
+            // currentStoreId
+            var currentStoreId = $("#StoreId").val();
+            // ajax call
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/store/sync-categories/" + currentStoreId,
+                dataType: "json",
+                type: "POST",
+                cache: false,
+                success: function (data) {
+                    if (data.result == "success") {
+                        alert("Kategoriler Başarıyla Güncellendi");
+                        $("#StoreProducts").trigger("click");
+                    }
+                    else {
+                        alert("Bir sorun oluştu! IT ekibiyle iletişime geçiniz.");
+                        console.log(data.message);
+                    }
+                },
+                error: function () {
+                    alert("Bir sorun oluştu! IT ekibiyle iletişime geçiniz.")
+                    console.log(data.message);
+                },
+                complete: function () {
+                    loading.hide();
+                }
+            });
+        })
+
+    });
+</script>

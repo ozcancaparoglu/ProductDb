@@ -1,0 +1,74 @@
+﻿
+@model OrderImportViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+
+<section class="content-header clearfix">
+    <h1 class="pull-left">
+        Order Import (Excel)
+        <small>Upload</small>
+    </h1>
+
+    <div class="pull-right">
+        @*<input id="templateDownload" type="button" class="btn btn-primary small" value="@localizer["Download"] Excel @localizer["Template"]" />*@
+    </div>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title">File Upload</h3>
+            </div>
+            <div class="box-body">
+                <form method="post" id="FileForm" action="/pms/order/order-import" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label id="Store">Store : </label>
+                                        <select class="select2 form-control" asp-for="StoreId" asp-items="@(new SelectList(Model.Stores,"Id","Name"))">
+                                            <option value=""> --Select-- </option>
+                                        </select>
+                                        <br />
+                                    </div>
+                                    <div class="form-group">
+                                        <label id="formFile">File :</label>
+                                        <input asp-for="formFile" class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="panel-footer">
+                                    <input type="submit" class="btn btn-default" value="Upload" />
+                                    @if (ViewBag.message != string.Empty)
+                                    {
+                                        <label class="text-danger">@ViewBag.message</label>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+    $(function () {
+
+        $('.select2').select2();
+
+        $("#FileForm").submit(function () {
+            if ($(this).valid()) {
+                $('#cover-spin').show();
+            }
+        });
+
+        $("#templateDownload").on("click", function () {
+        });
+    });
+</script>

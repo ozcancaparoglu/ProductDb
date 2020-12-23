@@ -1,0 +1,225 @@
+﻿@inject CustomLocalizer localizer
+@model CategoryViewModel
+@using (Html.BeginForm("Edit", "Category", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.HiddenFor(model => model.Category.Id)
+    @Html.HiddenFor(model => model.Category.CreatedDate)
+    @Html.HiddenFor(model => model.Category.State)
+    <!-- Content Header (Page header) -->
+    <section class="content-header clearfix">
+        <h1 class="pull-left">
+            @localizer["Category"]
+            <small>@localizer["Edit"]</small>
+        </h1>
+
+        <div class="pull-right">
+            <button type="submit" class="btn bg-blue">
+                <i class="fa fa-pencil"></i>
+                @localizer["Edit"]
+            </button>
+            <a href="/@localizer.CurrentLanguage/category/list" class="btn bg-red">
+                <i class="fa fa-ban"></i>
+                @localizer["Cancel"]
+            </a>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">@localizer["EditCategory"]</h3>
+                </div>
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    @localizer["GeneralInformation"]
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label> @localizer["Name"]</label>
+                                        @Html.TextBoxFor(model => model.Category.Name, new { @class = "form-control" })
+                                        <span class="text-red">@Html.ValidationMessageFor(model => model.Category.Name)</span>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label> @localizer["ParentCategory"]</label>
+                                        @Html.DropDownListFor(model => model.Category.ParentCategoryId, new SelectList(Model.ParentCategories, "Id", "CategoryNameWithParents"), localizer["Select"], new { @class = "form-control select2" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            @await Component.InvokeAsync("Language", new { fieldNames = ViewBag.fieldNames, tableName = ViewBag.tableName, id = Model.Category.Id })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">@localizer["CategoryTree"]</h3>
+                </div>
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    @localizer["GeneralInformation"]
+                                </div>
+                                <div class="panel-body">
+                                    <ol class="breadcrumb">
+                                        @foreach (var category in Model.ParentCategoryTree.Reverse())
+                                        {
+                                            <li><a href="/@localizer.CurrentLanguage/category/edit/@category.Id"><i class="fa fa-cube"></i> @category.Name</a></li>
+                                        }
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title"> @localizer["CategoryAttributes"]</h3>
+                    <div class="pull-right">
+                        <button type="button" class="btn bg-blue" data-toggle="modal" data-target="#modal-attribute">
+                            <i class="fa fa-plus"></i> @localizer["AddAttribute"]
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    @localizer["ParentAttributes"]
+                                </div>
+                                <div class="panel-body">
+                                    <table id="categoryParentAttributeList" class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>@localizer["AttributeName"]</th>
+                                                <th>@localizer["CategoryName"]</th>
+                                                <th>@localizer["IsRequired"]</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            @foreach (var attributes in Model.CategoryParentAttributes)
+                                            {
+                                                <tr>
+                                                    <td>@attributes.Attributes.Name</td>
+                                                    <td>@attributes.Category.Name</td>
+                                                    <td><input type="checkbox" value="@attributes.AttributesId" checked disabled></td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th>@localizer["AttributeName"]</th>
+                                                <th>@localizer["CategoryName"]</th>
+                                                <th>@localizer["IsRequired"]</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    @localizer["Attributes"]
+                                </div>
+                                <div class="panel-body">
+                                    <table id="categoryAttributeList" class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>@localizer["AttributeName"]</th>
+                                                <th>@localizer["CategoryName"]</th>
+                                                <th>@localizer["Remove"]</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @for (int i = 0; i < Model.CategoryAttributes.Count(); i++)
+                                            {
+                                                <tr>
+
+                                                    @Html.HiddenFor(model => model.CategoryAttributes[i].Id)
+                                                    @Html.HiddenFor(model => model.CategoryAttributes[i].AttributesId)
+                                                    @Html.HiddenFor(model => model.CategoryAttributes[i].CategoryId)
+                                                    @Html.HiddenFor(model => model.CategoryAttributes[i].CreatedDate)
+                                                    @Html.HiddenFor(model => model.CategoryAttributes[i].State)
+
+                                                    <td>@Model.CategoryAttributes[i].Attributes.Name</td>
+                                                    <td>@Html.CheckBoxFor(model => model.CategoryAttributes[i].IsRequired)</td>
+                                                    <td><a href="/@localizer.CurrentLanguage/category/delete-attribute/@Model.CategoryAttributes[i].Id"><i class="fa fa-close"></i></a></td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th>@localizer["AttributeName"]</th>
+                                                <th>@localizer["CategoryName"]</th>
+                                                <th>@localizer["Remove"]</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+@await Component.InvokeAsync("AddAttribute", new
+{
+    parentAttributesModels = Model.CategoryParentAttributes.Select(x => x.Attributes).ToList(),
+    attributesModels = Model.CategoryAttributes.Select(x => x.Attributes).ToList(),
+    entityId = Model.Category.Id,
+    type = "Category"
+})
+
+
+<!-- Page script -->
+<script>
+    $(function () {
+        $('.select2').select2();
+        var tabsli = $('.nav-tabs li').first();
+        tabsli.addClass("active");
+        $('#tab_0').addClass("active");
+
+        $('#categoryAttributeList').DataTable({
+            'paging': true,
+            'lengthChange': true,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            'pageLenght': 100
+        });
+
+        $('#categoryParentAttributeList').DataTable({
+            'paging': true,
+            'lengthChange': true,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            'pageLenght': 100
+        });
+    });
+</script>

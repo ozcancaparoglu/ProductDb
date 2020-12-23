@@ -1,0 +1,62 @@
+﻿@model WarehouseQueryModel
+@inject CustomLocalizer localizer
+@using (Html.BeginForm("CreateWarehouseQuery", "Warehouse", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    <section class="content-header clearfix">
+        <h1 class="pull-left">
+            @localizer["Warehouse"] @localizer["Query"]
+            <small>@localizer["Create"]</small>
+        </h1>
+
+        <div class="pull-right">
+            <button type="submit" name="save" class="btn bg-blue">
+                <i class="fa fa-floppy-o"></i>
+                @localizer["Save"]
+            </button>
+            <a href="/@localizer.CurrentLanguage/warehouse/warehouseQueryList" class="btn bg-red">
+                <i class="fa fa-ban"></i>
+                @localizer["Cancel"]
+            </a>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">@localizer["Add"] @localizer["New"] @localizer["Warehouse"] @localizer["Query"]</h3>
+                </div>
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    @localizer["General"]  @localizer["Information"]
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label for="warehouseName">@localizer["Warehouse"] @localizer["Name"]</label>
+                                        @Html.TextBoxFor(model => model.WarehouseName, new { @class = "form-control", placeholder = "Enter warehouse name" })
+                                        <br />
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="warehouseName">@localizer["Warehouse"] @localizer["Type"]</label>
+                                        @Html.DropDownListFor(a => a.WarehouseTypeId, new SelectList(Model.WarehouseTypeModels, "Id", "Name"), new { @class = "form-control" })
+                                        <br />
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="formula">@localizer["Query"]</label>
+                                        @Html.TextAreaFor(model => model.Query, new { @class = "form-control" })
+                                        <br />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}

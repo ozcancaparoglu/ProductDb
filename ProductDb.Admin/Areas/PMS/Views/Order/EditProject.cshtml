@@ -1,0 +1,141 @@
+﻿@using PMS.Common
+@inject ProductDb.Services.CurrencyServices.ICurrencyService _currencyService
+@{
+
+    var currencies = _currencyService.AllActiveCurrencies();
+}
+
+@model Project
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@{
+    var CompanyId = Model.LogoFirmCode;
+}
+@using (Html.BeginForm("EditProject", "Order", FormMethod.Post, new { area = "PMS" }))
+{
+    @Html.HiddenFor(model => model.Id)
+    @Html.HiddenFor(model => model.UpdatedBy)
+    @Html.HiddenFor(a => a.LogoFirmCode)
+    <!-- Content Header (Page header) -->
+    <section class="content-header clearfix">
+        <h1 class="pull-left">
+            Proje
+            <small>Düzenle</small>
+        </h1>
+
+        <div class="pull-right">
+            <button type="submit" name="save" class="btn bg-blue">
+                <i class="fa fa-floppy-o"></i>
+                Kaydet
+            </button>
+            <a href="/pms/order/get-order-project-list/@CompanyId" class="btn bg-red">
+                <i class="fa fa-ban"></i>
+                Çıkış
+            </a>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Düzenle</h3>
+                </div>
+                <div class="box-body">
+                    <div class="row">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                Genel Bilgiler
+                            </div>
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="ProjectPrefix">Proje Prefix</label>
+                                            @Html.TextBoxFor(model => model.ProjectPrefix, new { @class = "form-control", placeholder = "Enter Project Prefix" })
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="ProjectCode">Proje Kodu</label>
+                                            @Html.TextBoxFor(model => model.ProjectCode, new { @class = "form-control", placeholder = "Enter Project Code" })
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="ProjectCode">Curency Kodu : </label>
+                                            @Html.DropDownListFor(model => model.DefaultCurrency, new SelectList(currencies, "Abbrevation", "Abbrevation"), "--Select--", new { @class = "form-control select2" })
+                                            @Html.ValidationMessageFor(model => model.DefaultCurrency, null, new { @class = "text-danger" })
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="ProjectName">Proje Adı</label>
+                                            @Html.TextBoxFor(model => model.ProjectName, new { @class = "form-control", placeholder = "Enter Project Name" })
+                                        </div>
+                                        <div class="form-group">
+                                            @Html.CheckBoxFor(model => model.CheckingAccountToBeCreated, new { @class = "minimal" })
+                                            <label for="CheckingAccountToBeCreated">Cari Açılacak Mı ?</label>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="CheckingAccount">Cari  : </label>
+                                            @Html.TextBoxFor(model => model.CheckingAccount, new { @class = "form-control", placeholder = "Enter CheckingAccount" })
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="CheckingAccountCode">Cari Kodu : </label>
+                                            @Html.TextBoxFor(model => model.CheckingAccountCode, new { @class = "form-control", placeholder = "EnteraCheckingAccountCode" })
+                                        </div>
+                                        @*<div class="form-group">
+                                                <label for="LogoFirmCode">LogoFirmCode</label>
+                                                @Html.TextBoxFor(model => model.LogoFirmCode, new { @class = "form-control", placeholder = "Enter LogoFirmCode" })
+                                            </div>*@
+                                        <div class="form-group">
+                                            @Html.CheckBoxFor(model => model.TaxIncluded, new { @class = "minimal" })
+                                            <label for="TaxIncluded">KDV Dahil Mi?</label>
+                                        </div>
+                                        <div class="form-group">
+                                            @Html.CheckBoxFor(model => model.isActive, new { @class = "minimal" })
+                                            <label for="isActive">Aktif Mi?</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="Departmant">Departman</label>
+                                            @*@Html.TextBoxFor(model => model.Departmant, new { @class = "form-control", placeholder = "Enter Departmant" })*@
+                                            @Html.DropDownListFor(model => model.Departmant, new SelectList(Model.Departments, "NR", "NAME"), new { @class = "form-control" })
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="Division">Bölüm</label>
+                                            @Html.DropDownListFor(model => model.Division, new SelectList(Model.Divisions, "NR", "NAME"), new { @class = "form-control" })
+                                            @*@Html.TextBoxFor(model => model.Division, new { @class = "form-control", placeholder = "Enter Division" })*@
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="DueDateDifference">DueDateDifference</label>
+                                            @Html.TextBoxFor(model => model.DueDateDifference, new { @class = "form-control", placeholder = "Enter DueDateDifference" })
+                                        </div>
+                                        <div class="form-group">
+                                            @Html.CheckBoxFor(model => model.PriceControl, new { @class = "minimal" })
+                                            <label for="PriceControl">Fiyat Kontrolü?</label>
+                                        </div>
+                                        <div class="form-group">
+                                            @Html.CheckBoxFor(model => model.PriceDifference, new { @class = "minimal" })
+                                            <label for="PriceDifference">Fiyat Farkı?</label>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="ProjectGroupCode">Proje Grup Kodu</label>
+                                            @Html.TextBoxFor(model => model.ProjectGroupCode, new { @class = "form-control", placeholder = "Enter ProjectGroupCode" })
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="ProjectType">Proje Tipi</label>
+                                            @Html.DropDownListFor(a => a.ProjectType, Html.GetEnumSelectList(typeof(ProjectType)), new { @class = "form-control" })
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="Warehouse">Depo</label>
+                                            @Html.TextBoxFor(model => model.Warehouse, new { @class = "form-control", placeholder = "Enter Warehouse" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+

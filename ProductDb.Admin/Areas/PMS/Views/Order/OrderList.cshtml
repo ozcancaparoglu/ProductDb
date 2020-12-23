@@ -1,0 +1,303 @@
+﻿
+@model OrderViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+<style>
+    /*.k-grid .k-grid-header .k-header .k-link {
+        height: auto;
+    }
+
+
+    .k-grid .k-grid-header .k-header {
+        white-space: normal;
+        font-weight: bold !important;
+    }
+
+
+    .kendo-table-outter {
+        overflow-x: auto;
+    }
+
+
+        .kendo-table-outter td, .k-grid-content td {
+            white-space: nowrap;
+        }*/
+
+
+    /*.k-filter-row .k-dropdown-operator {
+        right: 0;
+    }*/
+
+
+    /*.k-filtercell > span {
+        padding-right: 2.7em !important;
+        width: 100% !important;
+    }*/
+
+    /*.k-filter-row .k-dropdown-operator {
+        right: 0;
+    }*/
+
+    /*.k-filtercell > span {
+        padding-right: 2.7em !important;
+        width: 100% !important;
+    }*/
+</style>
+<section class="content-header clearfix">
+    <h1 class="pull-left">
+        Sipariş
+        <small>Listesi</small>
+    </h1>
+
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                Erp Firmalar
+                            </div>
+                            <div class="panel-body">
+                                <select class="form-control" id="capiFirms" asp-items="@(new SelectList(Model.Firms,"FirmNo","FirmName"))">
+                                    <option>--Seçiniz--</option>
+                                </select>
+                            </div>
+                            <div class="panel-footer">
+                                <button type="button" id="allOrders"><span class="glyphicon glyphicon-refresh"></span> Getir </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <button class="btn btn-primary" id="btnRetryOrder"> <span class="glyphicon glyphicon-refresh"></span>  Tekrarla </button>
+                            </div>
+                            <div class="panel-body">
+                                <div id="allOrdersGrid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="viewContent">
+</div>
+
+<script>
+    var currentSelectedFirm = 0;
+
+    function OrderDetail(e) {
+        e.preventDefault();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var modalContent = $("#viewContent");
+        // content modal empty
+        modalContent.empty();
+        // call order detail
+        $.ajax({
+            url: "/pms/order/order-detail/" + dataItem.id,
+            dataType: "html",
+            type: "GET",
+            cache: false,
+            success: function (response) {
+                modalContent.html(response);
+                var modal = $("#modal-order-detail");
+                modal.modal('show');
+                modal.find('.modal-body').css({
+                    width: 'auto', //probably not needed
+                    height: 'auto', //probably not needed
+                    'max-height': '100%'
+                });
+
+            },
+            error: function (response) {
+                console.log(response.responseText);
+            }
+        })
+    }
+
+    function ReTryOrderSending() {
+        // loader
+        var loader = $("#cover-spin");
+
+        var selected = [];
+        var grid = $("#allOrdersGrid").data("kendoGrid");
+
+        if (grid == undefined) {
+            alert("Listeleme Yapmadınız");
+            return;
+        }
+
+        grid.select().each(function () {
+            selected.push({
+                OrderNo: grid.dataItem(this).orderNo,
+                ProjectCode : grid.dataItem(this).projectCode
+            });
+        });
+        // if not selected any data
+        if (selected.length == 0) {
+            alert("Seçim Yapmadınız");
+            return;
+        }
+
+        bootbox.confirm({
+            message: "Orders will be sent ?",
+            buttons: {
+                confirm: {
+                    label: 'Yes',
+                    className: 'btn-success'
+                },
+                cancel: {
+                    label: 'No',
+                    className: 'btn-danger'
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    // send order to api
+                    $.ajax({
+                        url: "/pms/order/save-orders/" + currentSelectedFirm,
+                        type: "POST",
+                        dataType: "json",
+                        cache: false,
+                        beforeSend: function () {
+                            loader.show();
+                        },
+                        data: { orders: selected },
+                        success: function (response) {
+                            allOrderFromServer();
+                        },
+                        error: function (response) {
+                            alert(response.responseText);
+                        },
+                        complete: function () {
+                            loader.hide();
+                        }
+                    })
+                }
+            }
+        });
+    }
+
+
+    var allOrderFromServer = function () {
+
+        var grid = $("#allOrdersGrid");
+        //destroy all data
+        var gridData = grid.data("kendoGrid");
+        if (gridData != undefined) {
+            gridData.destroy();
+        }
+        // get selected firm
+        var selectedFirm = $("#capiFirms").val();
+        if (selectedFirm == "") {
+            alert("Firma Seçimi Yapmadınız");
+            return;
+        }
+        // currentSelected Firm
+        currentSelectedFirm = selectedFirm;
+        // call all order from api
+        grid.kendoGrid({
+            toolbar: ["excel"],
+            excel: {
+                fileName: "OrderList.xlsx",
+                filterable: true,
+                allPages: true
+            },
+            dataSource: {
+                transport: {
+                    read: {
+                        url: "/pms/order/order-list/" + selectedFirm,
+                        dataType: "json",
+                        type: "POST"
+                    }
+                },
+                schema: {
+                    total: "total", // total is returned in the "total" field of the response
+                    data: "data", // records are returned in the "data" field of the response
+                    model: {
+                        id: "id"
+                    }
+                },
+                pageSize: 100,
+                serverPaging: true,
+                serverFiltering: true,
+                serverSorting: true
+            },
+            height: 650,
+            filterable: {
+                mode: "row"
+            },
+            sortable: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            resizable: true,
+            columns: [
+                { selectable: true, width: "50px" },
+                { field: "orderNo", title: "Sipariş No" },
+                { field: "projectCode", title: "Proje Kodu" },
+                { field: "logoCompanyCode", title: "Logo Firma Kodu" },
+                { field: "errorMessage", title: "Hata Mesajı" },
+                //{ field: "shippingCost", title: "Kargo Bedeli" },
+                //{ field: "collectionViaCreditCard", title: "Kredi Kartı Tahsilat" },
+                //{ field: "collectionViaTransfer", title: "Havale" },
+                //{ field: "errorMessage", title: "Hata Mesajı" },
+                { field: "isTransferred", title: "Logo Transfer Durumu" },
+                //{ field: "shipmentCode", title: "Sevk Kodu" },
+                //{ field: "billingAddressName", title: "Fatura Adı" },
+                //{ field: "billingAddress", title: "Fatura Adresi" },
+                //{ field: "billingCity", title: "Fatura İli" },
+                //{ field: "billingCountry", title: "Fatura Ülke" },
+                //{ field: "billingEmail", title: "Fatura Email" },
+                //{ field: "billingTaxOffice", title: "Vergi Dairesi" },
+                //{ field: "billingTaxNumber", title: "Fatura Numarası" },
+                { field: "orderDate", title: "Sipariş Tarihi", template: '#= kendo.toString(kendo.parseDate(orderDate), "dd/MM/yyyy HH.mm.ss")#' },
+                { field: "createDate", title: "Oluşturulma Tarihi", template: '#= kendo.toString(kendo.parseDate(createDate), "dd/MM/yyyy HH.mm.ss")#' },
+                {
+                    command: {
+                        text: "Sipariş Detayları",
+                        click: OrderDetail
+                    },
+                    title: " ",
+                    width: "180px"
+                }
+            ]
+        });
+    }
+
+    $(function () {
+        //  all order data from server
+        $("#allOrders").on("click", function () {
+            allOrderFromServer();
+        });
+
+        $("#btnRetryOrder").on("click", function () {
+            ReTryOrderSending();
+        })
+
+
+    });
+</script>
+

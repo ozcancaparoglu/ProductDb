@@ -1,0 +1,57 @@
+﻿@using PMS.Common
+
+@model OrderExcelViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using (Html.BeginForm("ExcelImport", "Order", FormMethod.Post, new { area = "PMS" }))
+{
+    <!-- Content Header (Page header) -->
+    <section class="content-header clearfix">
+        <h1 class="pull-left">
+            Sipariş
+            <small>Yükle</small>
+        </h1>
+
+        <div class="pull-right">
+            <button type="submit" name="save" class="btn bg-blue">
+                <i class="fa fa-floppy-o"></i>
+                Kaydet
+            </button>
+            <a href="/pms/order/get-order-project-list/215" class="btn bg-red">
+                <i class="fa fa-ban"></i>
+                Yüklenen Sipariş Listesi
+            </a>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Düzenle</h3>
+                </div>
+                <div class="box-body">
+                    <div class="row">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                Genel Bilgiler
+                            </div>
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <select id="OrderExcelImport" asp-for="@(new SelectList(Model.Projects,"ProjectPrefix",""))">
+                                            <option>--Seçiniz--</option>
+                                        </select>
+                                    </div>                                
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+

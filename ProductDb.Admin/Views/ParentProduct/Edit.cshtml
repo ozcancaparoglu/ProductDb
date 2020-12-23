@@ -1,0 +1,128 @@
+﻿@inject CustomLocalizer localizer
+@model ParentProductViewModel
+
+@{
+    string referer = Context.Request.Headers["Referer"].ToString();
+    Uri baseUri = new Uri(referer);
+}
+<script src="~/Assets/bower_components/ckeditor/ckeditor.js"></script>
+
+@using (Html.BeginForm("Edit", "ParentProduct", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.HiddenFor(model => model.ParentProduct.Id)
+    @Html.HiddenFor(model => model.ParentProduct.CreatedDate)
+    @Html.HiddenFor(model => model.ParentProduct.State)
+    @Html.HiddenFor(model => model.ParentProduct.ProcessedBy)
+    <!-- Content Header (Page header) -->
+    <section class="content-header clearfix">
+        <h1 class="pull-left">
+            @localizer["Parent"] @localizer["Product"]
+            <small>@localizer["Edit"]</small>
+        </h1>
+
+        <div class="pull-right">
+            <button type="submit" name="save" class="btn bg-blue">
+                <i class="fa fa-floppy-o"></i>
+                @localizer["Edit"]
+            </button>
+            <a href="@baseUri.AbsolutePath" class="btn bg-red">
+                <i class="fa fa-ban"></i>
+                @localizer["Cancel"]
+            </a>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">@localizer["Edit"] @localizer["Parent"] @localizer["Product"]</h3>
+                </div>
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    @localizer["GeneralInformation"]
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label>@localizer["Category"]</label>
+                                        @Html.DropDownListFor(model => model.ParentProduct.CategoryId, new SelectList(Model.Categories, "Id", "CategoryNameWithParents"), localizer["Select"], new { @class = "form-control select2" })
+                                        <span class="text-red">@Html.ValidationMessageFor(model => model.ParentProduct.CategoryId)</span>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>@localizer["Brand"]</label>
+                                        @Html.DropDownListFor(model => model.ParentProduct.BrandId, new SelectList(Model.Brands, "Id", "Name"), localizer["Select"], new { @class = "form-control select2" })
+                                        <span class="text-red">@Html.ValidationMessageFor(model => model.ParentProduct.BrandId)</span>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>@localizer["Supplier"]</label>
+                                        @Html.DropDownListFor(model => model.ParentProduct.SupplierId, new SelectList(Model.Suppliers, "Id", "Name"), localizer["Select"], new { @class = "form-control select2" })
+                                        <span class="text-red">@Html.ValidationMessageFor(model => model.ParentProduct.SupplierId)</span>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Sku</label>
+                                        @Html.TextBoxFor(model => model.ParentProduct.Sku, new { @class = "form-control", placeholder = "Enter parent product Sku" })
+                                        <span class="text-red">@Html.ValidationMessageFor(model => model.ParentProduct.Sku)</span>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>@localizer["Title"]</label>
+                                        @Html.TextBoxFor(model => model.ParentProduct.Title, new { @class = "form-control", placeholder = "Enter parent product title" })
+                                        <span class="text-red">@Html.ValidationMessageFor(model => model.ParentProduct.Title)</span>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>@localizer["Description"]</label>
+                                        @Html.TextAreaFor(model => model.ParentProduct.Description, 10, 5, new { @class = "form-control", placeholder = "Enter parent product description", maxlength = 5000 })
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>@localizer["ShortDescription"]</label>
+                                        @Html.TextAreaFor(model => model.ParentProduct.ShortDescription, 10, 5, new { @class = "form-control", placeholder = "Enter parent product short description", maxlength = 1000 })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            @await Component.InvokeAsync("Language", new { fieldNames = ViewBag.FieldNames, tableName = ViewBag.tableName, id = Model.ParentProduct.Id })
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+
+<!-- Page script -->
+<script>
+    $(function () {
+        $('.select2').select2();
+        var tabsli = $('.nav-tabs li').first();
+        tabsli.addClass("active");
+        $('#tab_0').addClass("active");
+
+
+        var textAreas = $("textarea");
+        textAreas.each(function (index, element) {
+            var lenght = $(element).attr('maxlength');
+
+            CKEDITOR.replace($(element).attr('id'), {
+                extraPlugins: 'wordcount',
+                wordcount: {
+                    showWordCount: true,
+                    showCharCount: true,
+                    maxCharCount: lenght == undefined ? -1 : lenght,
+                }
+            });
+        });
+
+    });
+</script>

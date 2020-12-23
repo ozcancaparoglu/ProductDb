@@ -1,0 +1,277 @@
+﻿@model StoreMarginViewModel
+@inject CustomLocalizer localizer
+
+
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+<div id="cover-spin"></div>
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title"><b> @Model.StoreModel.Name </b> @localizer["Margins"]</h3>
+            </div>
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                @localizer["Search"] @localizer["Products"]
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    @Html.HiddenFor(model => model.StoreModel.Id)
+                                    <label>@localizer["Margins"] :  </label>
+                                    <select class="select2 form-control" asp-for="MarginTypeModel" asp-items="@(new SelectList(Model.MarginTypes,"Id","Name"))">
+                                        <option>--@localizer["Select"]--</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="panel-footer">
+                                <button type="button" name="StoreMargins" id="StoreMargins" class="btn bg-blue">
+                                    <i class="fa fa-search"></i>
+                                    @localizer["Search"]
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12" id="CatBrand">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                Margin Ekle
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group">
+
+                                    <label>@localizer["Categories"] :  </label>
+                                    <select class="select2 form-control" asp-for="CategoryModel" asp-items="@(new SelectList(Model.Categories,"Id","CategoryNameWithParents"))">
+                                        <option>--@localizer["Select"]--</option>
+                                    </select>
+
+                                    <label>@localizer["Brands"] :  </label>
+                                    <select class="select2 form-control" asp-for="BrandModel" asp-items="@(new SelectList(Model.Brands,"Id","Name"))">
+                                        <option>--@localizer["Select"]--</option>
+                                    </select>
+                                    <br />
+                                    <button type="button" name="AddMargin" id="AddMargin" class="btn bg-blue">
+                                        <i class="fa fa-download"></i>
+                                        @localizer["Add"]
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title">Store Margins</h3>
+            </div>
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div id="grid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+    $(function () {
+
+        var CatBrand = $("#CatBrand");
+        CatBrand.css("display", "none");
+
+        $('.select2').select2();
+        var storeId = $("#@Html.IdFor(x=>x.StoreModel.Id)").val();
+
+        var storeMargins = function () {
+            var marginId = $("#@Html.IdFor(x=>x.MarginTypeModel)").val();
+        }
+
+        var baseUrl = "/@localizer.CurrentLanguage";
+        var crudServiceBaseUrl = "/@localizer.CurrentLanguage/store";
+
+        var grid = $("#grid");
+        var getMargins = function () {
+
+           var storeId = $("#@Html.IdFor(model=> model.StoreModel.Id)").val();
+           var marginTypeId =$("#@Html.IdFor(x=>x.MarginTypeModel)").val();
+
+           var url = "";
+           var columns = [];
+
+           grid.empty();
+           var kendoData = $("#grid").data("kendoGrid");
+
+            if (kendoData != undefined) {
+               kendoData.destroy();
+            }
+
+            // select product
+
+            switch (marginTypeId) {
+                case "1":
+                    url = "/@localizer.CurrentLanguage/Store/MarginProducts/" + storeId + "/" + marginTypeId;
+                    columns = [
+                        {
+                            field: "sku",
+                            title: "SKU"
+                        },
+                        {
+                            field: "name",
+                            title: "Name"
+                        },
+                        {
+                            field: "profit",
+                            title: "Profit",
+                            filterable: false
+                        }]
+                    break
+                 case "2":
+                    url = "/@localizer.CurrentLanguage/Store/MarginCategoryBrand/" + storeId + "/" + marginTypeId;
+                    columns = [
+                        {
+                            field: "name",
+                            title: "Category Name"
+                        },
+                        {
+                            field: "secondName",
+                            title: "Brand Name"
+                        },
+                        {
+                            field: "profit",
+                            title: "Profit",
+                            filterable: false
+                        }]
+                    break
+                 case "3":
+                    url = "/@localizer.CurrentLanguage/Store/MarginBrands/" + storeId + "/" + marginTypeId;
+                     columns = [
+                        {
+                            field: "name",
+                            title: "Name"
+                        },
+                        {
+                            field: "profit",
+                            title: "Profit",
+                            filterable: false
+                        }]
+                    break
+                  case "4":
+                    url = "/@localizer.CurrentLanguage/Store/MarginCategories/" + storeId + "/" + marginTypeId;
+                     columns = [
+                        {
+                            field: "categoryWithParents",
+                            title: "Category Name"
+                        },
+                        {
+                            field: "profit",
+                            title: "Profit",
+                            filterable: false
+                        }]
+                    break
+                default:
+            }
+
+           columns.push( { command: ["edit", "destroy"], title: "&nbsp;", width: "250px" });
+
+           grid.kendoGrid({
+                            dataSource: {
+                                transport: {
+                                    read: {
+                                       url: url,
+                                       dataType: "json",
+                                       type: "GET"
+                                    },
+                                    update: {
+                                        url: "/@localizer.CurrentLanguage/Store/MarginUpdate",
+                                        dataType: "json",
+                                        type: "POST"
+                                    },
+                                    destroy: {
+                                        url: "/@localizer.CurrentLanguage/Store/MarginDelete",
+                                        dataType: "json",
+                                        type: "POST"
+                                    }
+                                 },
+                            pageSize: 20,
+                            schema: {
+                                model: {
+                                    id: "id",
+                                    fields: {
+                                        id: { editable: false, nullable: true },
+                                        "name": { editable: false },
+                                        "sku": { editable: false },
+                                        "secondName": { editable: false },
+                                        "storeId": { editable: false },
+                                        "marginTypeId": { editable: false },
+                                        "profit": { editable: true, type: "number", validation: { required: false, min: 0 } },
+                                        "entityId": { editable: false },
+                                        "SecondEntityId": { editable: false },
+                                        "categoryWithParents": { editable: false }
+                                    }
+                                }
+                            }
+                        },
+                         pageable: true,
+                         height: 900,
+                         reorderable: true,
+                         resizable: true,
+                         filterable: {
+                             mode: "row"
+                         },
+                         sortable: true,
+                         columns: columns,
+                         editable: "inline"
+           });
+        }
+
+        $("#StoreMargins").on("click", function () {
+            getMargins();
+        })
+
+        var marginType = $("#@Html.IdFor(x=>x.MarginTypeModel)");
+
+        marginType.on("change", function () {
+            $(this).val() == 2 ?  CatBrand.css("display", "block"): CatBrand.css("display", "none");;
+        });
+
+        $("#AddMargin").click(function () {
+
+            var margin = {
+                StoreId : $("#@Html.IdFor(model=>model.StoreModel.Id)").val(),
+                MarginTypeId: $("#@Html.IdFor(model=>model.MarginTypeModel)").val(),
+                Profit: 1, // default
+                EntityId: $("#@Html.IdFor(model => model.CategoryModel)").val(),
+                SecondEntityId: $("#@Html.IdFor(model => model.BrandModel)").val()
+            }
+
+            // ajax call
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/Store/MarginInsert",
+                cache: false,
+                type: "POST",
+                dataType: "json",
+                data: margin,
+                success: function (response) {
+                    if (response.status) {
+                        getMargins();
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function (response) {
+                    console.log(response.responseText);
+                }
+            })
+
+
+        })
+    })
+</script>

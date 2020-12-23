@@ -1,0 +1,500 @@
+﻿@inject CustomLocalizer localizer
+@model CalculatorViewModel
+
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+
+<style>
+    [data-ribbon] {
+        position: relative;
+        display: inline-block;
+        padding: 12px 20px;
+        background: #00c0ef;
+        text-align: center;
+        color: #fff;
+        text-decoration: none;
+    }
+
+        [data-ribbon]:after {
+            content: attr(data-ribbon);
+            position: absolute;
+            top: 5px;
+            right: -20px;
+            color: #000;
+            height: 0;
+            border-bottom: 18px solid gold;
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            transform: rotate(45deg);
+        }
+
+    [data-ribbon2] {
+        position: relative;
+        display: inline-block;
+        padding: 15px 32px;
+        background: #001F3F;
+        text-align: center;
+        color: #fff;
+        text-decoration: none;
+    }
+
+        [data-ribbon2]:after {
+            content: attr(data-ribbon2);
+            position: absolute;
+            top: 6px;
+            right: -20px;
+            color: #000;
+            height: 0;
+            border-bottom: 18px solid gold;
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            transform: rotate(45deg);
+        }
+</style>
+
+
+<div id="cover-spin"></div>
+
+
+<section class="content-header clearfix">
+    <h1 class="pull-left">
+        @localizer["Formula"]
+        <small>@Model.FormulaGroup.Name</small>
+    </h1>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title">@localizer["AddNew"] @localizer["Formula"]</h3>
+            </div>
+            <div class="box-body">
+                <div class="row">
+
+                    <div class="col-md-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                @localizer["GeneralInformation"]
+                            </div>
+                            <div class="panel-body">
+
+                                <div class="input-group">
+                                    <!-- /btn-group -->
+                                    <input type="text" id="display" class="form-control" disabled="disabled" />
+                                    <div class="input-group-btn">
+                                        <button type="button" id="add-formula" class="btn btn-default" data-toggle="modal" data-target="#modal-formula-name">@localizer["Add"] = </button>
+                                    </div>
+                                </div>
+                                <br />
+                                <table class="table table-bordered">
+                                    <tr>
+                                        <td align="center">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-default all-clear" style="width:50px">AC</button>
+                                                <button type="button" class="btn btn-default clear-entry" style="width:50px">CE</button>
+                                                <button type="button" class="btn btn-default number-button" style="width:50px">(</button>
+                                                <button type="button" class="btn btn-default number-button" style="width:50px">)</button>
+                                                <button type="button" class="btn btn-warning product-button" style="width:50px">BP</button>
+                                            </div>
+                                            <br />
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-info number-button" style="width:50px">1</button>
+                                                <button type="button" class="btn btn-info number-button" style="width:50px">2</button>
+                                                <button type="button" class="btn btn-info number-button" style="width:50px">3</button>
+                                                <button type="button" class="btn btn-default operator-button" style="width:50px">+</button>
+                                                <button type="button" class="btn btn-warning product-button" style="width:50px">MP</button>
+                                            </div>
+                                            <br />
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-info number-button" style="width:50px">4</button>
+                                                <button type="button" class="btn btn-info number-button" style="width:50px">5</button>
+                                                <button type="button" class="btn btn-info number-button" style="width:50px">6</button>
+                                                <button type="button" class="btn btn-default operator-button" style="width:50px">-</button>
+                                                <button type="button" class="btn btn-warning product-button" style="width:50px">CP</button>
+                                            </div>
+                                            <br />
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-info number-button" style="width:50px">7</button>
+                                                <button type="button" class="btn btn-info number-button" style="width:50px">8</button>
+                                                <button type="button" class="btn btn-info number-button" style="width:50px">9</button>
+                                                <button type="button" class="btn btn-default operator-button" style="width:50px">*</button>
+                                                <button type="button" class="btn btn-warning product-button" style="width:50px">D</button>
+                                            </div>
+                                            <br />
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-info number-button" style="width:99px">0</button>
+                                                <button type="button" class="btn btn-default operator-button" style="width:50px">.</button>
+                                                <button type="button" class="btn btn-default operator-button" style="width:50px">/</button>
+                                                <button type="button" class="btn btn-warning product-button" style="width:50px">AD</button>
+                                            </div>
+                                            <br />
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-default product-button" style="width:124px">SARF</button>
+                                                <button type="button" class="btn btn-default product-button" style="width:124px">KDV</button>
+                                            </div>
+                                            <br />
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-warning product-button" style="width:124px">MARJ</button>
+                                                <button type="button" class="btn btn-warning product-button" style="width:124px">KARGO</button>
+                                            </div>
+                                            <br />
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-danger product-button" style="width:247px">NAKLIYE</button>
+                                            </div>
+                                            <br />
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-default function-button" style="width:124px">ROUNDTO90</button>
+                                                <button type="button" class="btn btn-default function-button" style="width:124px">ROUNDTO99</button>
+                                            </div>
+                                            <br />
+                                            <br />
+                                            <div class="btn-group" id="formula-currency">
+                                                @foreach (var currency in Model.Currencies)
+                                                {
+                                                    <a class="product-button" data-ribbon="@currency.Value">@currency.Abbrevation</a>
+                                                }
+                                            </div>
+                                            <br />
+                                            <br />
+                                            <div class="btn-group" id="formula-currency">
+                                                @foreach (var currency in Model.MbCurrencies)
+                                                {
+                                                    <a class="product-button" data-ribbon2="@currency.LiveValue">MB_@currency.Abbrevation</a>
+                                                }
+                                            </div>
+
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                @localizer["GeneralInformation"]
+                            </div>
+                            <div class="panel-body" id="formulasTable">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="box">
+    <div class="box-header">
+        <h3 class="box-title">Tuş Özellikleri</h3>
+    </div>
+    <!-- /.box-header -->
+    <div class="box-body no-padding">
+        <table class="table table-striped">
+            <tbody>
+                <tr>
+                    <th>Tuş</th>
+                    <th>Açıklama</th>
+                </tr>
+                <tr>
+                    <td><button type="button" class="btn btn-default" style="width:100px">AC</button></td>
+                    <td>Hepsini Sil</td>
+                </tr>
+                <tr>
+                    <td><button type="button" class="btn btn-default" style="width:100px">CE</button></td>
+                    <td>Son Girileni Sil</td>
+                </tr>
+                <tr>
+                    <td><button type="button" class="btn btn-info" style="width:100px">0-9</button></td>
+                    <td>Sayılar</td>
+                </tr>
+                <tr>
+                    <td><button type="button" class="btn btn-warning" style="width:100px">BP</button></td>
+                    <td>Alış Fiyatı (Mağazadaki her ürün için özeldir)</td>
+                </tr>
+                <tr>
+                    <td><button type="button" class="btn btn-warning" style="width:100px">MP</button></td>
+                    <td>Psf Fiyatı (Mağazadaki her ürün için özeldir)</td>
+                </tr>
+                <tr>
+                    <td><button type="button" class="btn btn-warning" style="width:100px">CP</button></td>
+                    <td>Kurumsal Fiyat (Mağazadaki her ürün için özeldir)</td>
+                </tr>
+                <tr>
+                    <td><button type="button" class="btn btn-warning" style="width:100px">D</button></td>
+                    <td>Desi (Mağazadaki her ürün için özeldir) - Kargo hesaplamasında kullanılır.</td>
+                </tr>
+                <tr>
+                    <td><button type="button" class="btn btn-warning" style="width:100px">AD</button></td>
+                    <td>Yurtdışı Desi (Mağazadaki her ürün için özeldir) - Kargo hesaplamasında kullanılır.</td>
+                </tr>
+                <tr>
+                    <td><button type="button" class="btn btn-default" style="width:100px">SARF</button></td>
+                    <td>Sarf - Mağazaya tanımlıdır tek bir değerdir. Ayarı mağaza içindedir.</td>
+                </tr>
+                <tr>
+                    <td><button type="button" class="btn btn-default" style="width:100px">KDV</button></td>
+                    <td>Kdv (Mağazadaki her ürün için özeldir)</td>
+                </tr>
+                <tr>
+                    <td><button type="button" class="btn btn-warning" style="width:100px">MARJ</button></td>
+                    <td>Marj - Mağazaya tanımlıdır. Ayarları mağaza menüsündedir (Ürün Marjı > Kategori-Marka Marjı > Marka Marjı > Kategori Marjı). Formülde kullanılırsa ve hiçbiri yoksa mağazada tanımlı DefaultMarjı alır.</td>
+                </tr>
+                <tr>
+                    <td><button type="button" class="btn btn-warning" style="width:100px">KARGO</button></td>
+                    <td>Kargo - Mağazaya tanımlıdır. Desi veya AbroadDesi seçimi ve kur seçimi vardır. Ayrıca mağazada seçtiğiniz desi tipine göre, aralıklarını girip kargo ayarlarını yapabilirsiniz.</td>
+                </tr>
+                <tr>
+                    <td><button type="button" class="btn btn-danger" style="width:100px">NAKLIYE</button></td>
+                    <td>Nakliye - Mağazaya tanımlıdır. Marka ve ürün bazında, gönderim tipine göre (Uçak, Gemi, Karayolu) nakliye ücreti ekleme ayarları mağazanın ayarlarında yapılabilir.</td>
+                </tr>
+                <tr>
+                    <td><button type="button" class="btn btn-default" style="width:100px">ROUNDTO90</button></td>
+                    <td>90'a yuvarlar - Bu tuşa basıldığında üstüne formül girilemez son formül adımında kullanınız. Mağazadaki bütün ürünlerin küsüratlarını 90 yapar. (#.90)</td>
+                </tr>
+                <tr>
+                    <td><button type="button" class="btn btn-default" style="width:100px">ROUNDTO99</button></td>
+                    <td>99'a yuvarlar - Bu tuşa basıldığında üstüne formül girilemez son formül adımında kullanınız. Mağazadaki bütün ürünlerin küsüratlarını 99 yapar. (#.99)</td>
+                </tr>
+                <tr>
+                    <td><a data-ribbon="1.00" style="width:100px">TRY</a></td>
+                    <td>Belirlediğimiz sabit kur tuşları (Ayarları kurlar menüsünde). Kur değişimi yapmayınız mağazada tanımlı kura göre en son fiyat çevrilir. Ara işlemler TL'ye dönülerek yapılır. Örneğin; 5$ ekle gibi işlemlerde kullanınız.<br />(Kullanımı : res1 + 5 * {USD})</td>
+                </tr>
+                <tr>
+                    <td><a data-ribbon2="6.05" style="width:100px">MB_USD</a></td>
+                    <td>Merkez Bankası Kurları (PLN ve AED kurlarını alım-satım yapmadığı için Merkez Bankası'ndan gelmez). Kur değişimi yapmayınız mağazada tanımlı kura göre en son fiyat çevrilir. Ara işlemler TL'ye dönülerek yapılır. Örneğin; 5$ ekle gibi işlemlerde kullanınız.<br />(Kullanımı : res1 + 5 * {MB_USD})</td>
+                </tr>
+                <tr>
+                    <td><button type="button" class="btn btn-success" style="width:100px">res1,2-10...</button></td>
+                    <td>
+                        Formül adımı sonuçları. Her formülün sonucunu tutar bir sonraki adımda o sonuç üzerinden işlem yapabilirsiniz. Son formül adımı nihayi satış fiyatını verir! Formül adımlarını birbirinden koparmayınız. Her bir formül adımı matematiksel işlem önceliğine göre çalışır. <br /> Örnek Kullanımı : <br /> 33 * (65-99) / 15 = {res1} <br /> {res1} * {MARJ} + 22 - 11 = {res2} <br /> {res2} + 60 / 44 = {res3} ...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- /.box-body -->
+</div>
+
+<div class="modal fade" id="modal-formula-name" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title">@localizer["Name"]</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form">
+                    <div class="form-group">
+                        <input type="text" id="formulaName" class="form-control" placeholder="Please enter formula name" onkeyup="manage(this)" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">@localizer["Close"]</button>
+                <button type="button" id="formulaWithName" class="btn btn-primary" disabled>@localizer["Save"]</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script type="text/javascript">
+
+    function manage(txt) {
+            var bt = document.getElementById('formulaWithName');
+            if (txt.value != '') {
+                bt.disabled = false;
+            }
+            else {
+                bt.disabled = true;
+            }
+    }
+
+    $(function () {
+        $('.select2').select2();
+        var formulaGroupId = @Model.FormulaGroup.Id;
+        var loader = $("#cover-spin");
+        var formulaContent = $("#formulasTable");
+
+        function CallFormulasComponent(groupId) {
+
+            loader.show();
+            formulaContent.empty();
+
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/calculator/formula-component/" + groupId,
+                dataType: "html",
+                type: "GET",
+                cache: false,
+                async: false,
+                success: function (response) {
+                    formulaContent.html(response);
+                },
+                error: function (response) {
+                    console.log(response.responseText);
+                },
+                complete: function () {
+                    loader.hide();
+                }
+            });
+
+        }
+
+        function ResetCalculator(clear) {
+
+            //<-- Calculator Kodları -->
+
+            function Calculator(displayId) {
+                this.displayId = displayId;
+                this.arr = [];
+            }
+
+            Calculator.prototype.updateDisplay = function () {
+                document.getElementById(this.displayId).value = this.arr.join(" ");
+            };
+
+            Calculator.prototype.handleNumber = function (number) {
+                if (isNaN(this.arr[this.arr.length - 1])) {
+                    this.arr.push(number.toString());
+                } else {
+                    this.arr[this.arr.length - 1] += number.toString();
+                }
+                this.updateDisplay();
+            };
+
+            Calculator.prototype.handleProduct = function (product) {
+                if (isNaN(this.arr[this.arr.length - 1])) {
+                    this.arr.push("{" + product.toString() + "}");
+                } else {
+                    this.arr[this.arr.length - 1] += "{" + product.toString() + "}";
+                }
+                this.updateDisplay();
+            }
+
+            Calculator.prototype.handleOperator = function (operator) {
+                if (!isNaN(this.arr[this.arr.length - 1])) {
+                    if (operator === ".") {
+                        if (!this.arr[this.arr.length - 1].includes(".")) {
+                            this.arr[this.arr.length - 1] += operator.toString();
+                        }
+                    } else {
+                        this.arr.push(operator);
+                    }
+                    this.updateDisplay();
+                }
+                //böyle de if yazarım amk tuttu çok da cıfır oldu =)
+                else if (this.arr[this.arr.length - 1].charAt(this.arr[this.arr.length - 1].length - 1) == ")" || this.arr[this.arr.length - 1].charAt(this.arr[this.arr.length - 1].length - 1) === "}") {
+                    this.arr.push(operator);
+                    this.updateDisplay();
+                }
+            };
+
+            Calculator.prototype.handleFunction = function (funct) {
+                this.arr = [];
+                this.arr.push("{" + funct.toString() + "}")
+                this.updateDisplay();
+            };
+
+
+            Calculator.prototype.allClear = function () {
+                this.arr = [];
+                this.updateDisplay();
+            };
+
+            Calculator.prototype.clearEntry = function () {
+                this.arr.pop();
+                this.updateDisplay();
+            };
+
+            Calculator.prototype.sumNumbers = function () {
+                var total = eval(this.arr.join(" "));
+                this.arr = [total];
+                this.updateDisplay();
+            };
+
+            var calc = new Calculator("display");
+            var numberButtons = document.getElementsByClassName("number-button");
+            var operatorButtons = document.getElementsByClassName("operator-button");
+            var productButtons = document.getElementsByClassName("product-button");
+            var functionButtons = document.getElementsByClassName("function-button");
+            var allClearButton = document.querySelector(".all-clear");
+            var clearEntryButton = document.querySelector(".clear-entry");
+            
+            allClearButton.addEventListener("click", function () {
+                calc.allClear();
+            });
+
+            if (clear)
+                calc.allClear();
+
+            clearEntryButton.addEventListener("click", function () {
+                calc.clearEntry();
+            });
+
+            for (var i = 0; i < operatorButtons.length; i++) {
+                operatorButtons[i].addEventListener("click", function () {
+                    calc.handleOperator(this.textContent);
+                });
+            }
+
+            for (var j = 0; j < numberButtons.length; j++) {
+                numberButtons[j].addEventListener("click", function () {
+                    calc.handleNumber(this.textContent);
+                });
+            }
+
+            for (var m = 0; m < productButtons.length; m++) {
+                productButtons[m].addEventListener("click", function () {
+                    calc.handleProduct(this.textContent);
+                });
+            }
+
+             for (var k = 0; k < functionButtons.length; k++) {
+                functionButtons[k].addEventListener("click", function () {
+                    calc.handleFunction(this.textContent);
+                });
+            }
+        }
+        //<-- Calculator Kodları Son -->
+
+        CallFormulasComponent(formulaGroupId);
+        ResetCalculator();
+
+        $("#formulaWithName").on("click", function () {
+            var formulaStr = $("#display").val();
+            var name = $("#formulaName").val();
+
+            if (formulaStr.includes("ROUND")) {
+                $("#add-formula").prop('disabled', true);
+            }
+
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/calculator/insert-formula",
+                type: 'POST',
+                data: { formulaGroupId : formulaGroupId, formulaStr : formulaStr, name : name },
+                cache: false,
+                beforeSend: function () {
+                    loader.show();
+                },
+                success: function (data) {
+                    CallFormulasComponent(data.id);
+                    ResetCalculator(true);
+                },
+                complete: function () {
+                    $("#formulaName").val('');
+                    $("#formulaWithName").attr("disabled", true);
+                    $('#modal-formula-name').modal('toggle');
+                    loader.hide();
+                }
+            });
+
+        });
+    });
+
+</script>

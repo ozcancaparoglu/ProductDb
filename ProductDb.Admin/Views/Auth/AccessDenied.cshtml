@@ -1,0 +1,19 @@
+﻿@inject CustomLocalizer localizer
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="alert alert-danger">
+                            <h4><i class="icon fa fa-ban"></i> @localizer["AccessDenied"]</h4>
+                            @localizer["AccessDeniedMessage"]<br />
+                            <a href="/@localizer.CurrentLanguage/">@localizer["ReturnToDashboard"]</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+

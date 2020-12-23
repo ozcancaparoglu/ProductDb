@@ -1,0 +1,90 @@
+﻿
+
+@model IEnumerable<DateDiffInvoice>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var CompanyCode = Model.FirstOrDefault().COMPANYCODE;
+}
+
+@{
+    ViewData["Title"] = "Index";
+}
+<!-- Content Header (Page header) -->
+<section class="content-header clearfix">
+    <h1 class="pull-left">
+        Invoice Details
+        <small>List</small>
+    </h1>
+
+    <div class="pull-right">
+        <a href="/pms/order/get-datediff-invoices/@CompanyCode" class="btn bg-blue">
+            <i class="fa fa-align-left"></i>
+            Back
+        </a>
+    </div>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                Invoices
+                            </div>
+                            <div class="panel-body">
+                                <table id="languageList" class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Malzeme Kodu</th>
+                                            <th>Malzeme Adı</th>
+                                            <th>Fiayt</th>
+                                            <th>KDV Oranı</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model)
+                                        {
+                                            <tr>
+                                                <td>@item.ITEMCODE</td>
+                                                <td>@item.ITEMNAME</td>
+                                                <td>@item.PRICE</td>
+                                                <td>@item.VATRATE</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Malzeme Kodu</th>
+                                            <th>Malzeme Adı</th>
+                                            <th>Fiayt</th>
+                                            <th>KDV Oranı</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    $(function () {
+        $('#languageList').DataTable({
+            'paging': true,
+            'lengthChange': true,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            'pageLenght': 100
+        });
+    });
+</script>
+

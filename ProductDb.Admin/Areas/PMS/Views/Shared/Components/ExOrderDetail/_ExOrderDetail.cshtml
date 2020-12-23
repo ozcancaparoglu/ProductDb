@@ -1,0 +1,68 @@
+﻿@model OrderDetailViewModel
+@{
+    Layout = null;
+}
+<div class="modal fade" id="modal-order-detail" style="display: none;">
+    <div class="modal-dialog" style="width:fit-content">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title">Sipariş Detay</h4>
+            </div>
+            <div class="modal-body">
+                <table id="orderList" class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Sku</th>
+                            <th>Name</th>
+                            <th>Miktar</th>
+                            <th>Fiyat</th>
+                            <th>Kdv</th>
+                            <th>Para Birimi</th>
+                            <th>Puan</th>
+                            <th>Puan Tutar</th>
+                            <th>Kargo Fiyatı</th>
+                            <th>Katalog Kodu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var orderItem in Model.Items)
+                        {
+                            <tr>
+                                <td>@orderItem.SKU</td>
+                                <td>@orderItem.ProductName</td>
+                                <td>@orderItem.Quantity</td>
+                                <td>@orderItem.Price</td>
+                                <td>@orderItem.VAT</td>
+                                <td>@orderItem.Currency</td>
+                                <td>@orderItem.Points</td>
+                                <td>@orderItem.PointsValue</td>
+                                <td>@orderItem.CargoPrice</td>
+                                <td>@orderItem.CatalogCode</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script>
+    $(function () {
+        $('#orderList').DataTable({
+            'paging': true,
+            'lengthChange': true,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            'pageLenght': 100
+        });
+    });
+</script>
+

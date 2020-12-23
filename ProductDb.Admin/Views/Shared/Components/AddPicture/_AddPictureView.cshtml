@@ -1,0 +1,85 @@
+﻿@inject CustomLocalizer localizer
+@model PictureViewModel
+<div class="modal fade" id="modal-picture" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="@localizer["Close"]">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title">@localizer["Picture"]</h4>
+            </div>
+            <form method="post" id="addPicture" enctype="multipart/form-data">
+                <div class="modal-body">
+                    @Html.HiddenFor(model => model.Sku)
+                    @Html.HiddenFor(model => model.Picture.ProductId)
+                    <div class="form-group">
+                        <label data-toggle="tooltip" data-html="true" title="" data-placement="right" data-original-title="@localizer["PicturePlaceholder"]">
+                            <label>@localizer["ChooseFiles"]<i class="fa fa-question" aria-hidden="true"></i></label>
+                        </label>
+                        <input id="filePath" asp-for="Files" type="file" class="form-control" multiple />
+                    </div>
+                    <div class="alert alert-danger hidden">
+                        <h4><i class="icon fa fa-ban"></i> @localizer["Attention"]</h4>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">@localizer["Close"]</button>
+                    <button type="submit" class="btn btn-primary">@localizer["Add"]</button>
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script>
+
+$(document).ready(function () {
+
+    $("form#addPicture").submit(function(e) {
+
+        e.preventDefault();
+
+        var loader = $("#cover-spin");
+
+        var formData = new FormData(this);
+
+        var fileInput = document.getElementById('filePath');
+
+        for (i = 0; i < fileInput.files.length; i++) {
+              var sfilename = fileInput.files[i].name;
+              formData.append(sfilename, fileInput.files[i]);
+              //formData.append("__RequestVerificationToken", $('#addPicture input[name=__RequestVerificationToken]').val());
+        }
+
+        $.ajax({
+            url: "/@localizer.CurrentLanguage/picture/insert",
+            type: 'POST',
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false,
+            beforeSend: function () {
+                loader.show();
+            },
+            success: function (data) {
+                if (data.message.length > 0) {
+                    $('.alert-danger').removeClass('hidden');
+                    $('.alert-danger span').html(data.message);
+                } else {
+                       window.location = data.url;
+                }
+            },
+            complete: function () {
+                loader.hide();
+            }
+        });
+    });
+
+});
+
+</script>
+

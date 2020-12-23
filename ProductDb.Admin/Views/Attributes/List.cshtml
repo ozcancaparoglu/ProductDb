@@ -1,0 +1,108 @@
+﻿@inject CustomLocalizer localizer
+@model List<AttributesModel>
+<!-- Content Header (Page header) -->
+<section class="content-header clearfix">
+    <h1 class="pull-left">
+        @localizer["Attributes"]
+        <small>@localizer["List"]</small>
+    </h1>
+
+    <div class="pull-right">
+        <a href="/@localizer.CurrentLanguage/attributes/create" class="btn bg-blue">
+            <i class="fa fa-plus"></i>
+            @localizer["AddNew"]
+        </a>
+    </div>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                @localizer["Attributes"]
+                            </div>
+                            <div class="panel-body">
+                                <table id="attributesList" class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>@localizer["Name"]</th>
+                                            <th>@localizer["Edit"]</th>
+                                            <th>@localizer["IsRequired"]</th>
+                                            <th>@localizer["Status"]</th>
+                                            <th>@localizer["Values"]</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var attributes in Model)
+                                        {
+                                            <tr>
+                                                <td>@attributes.Name</td>
+                                                <td>
+                                                    <a href="/@localizer.CurrentLanguage/attributes/edit/@attributes.Id" class="btn btn-default">
+                                                        <i class="fa fa-edit"></i> @localizer["Edit"]
+                                                    </a>
+                                                </td>
+                                                <td>@attributes.IsRequired</td>
+                                                <td>
+                                                    <a href="/@localizer.CurrentLanguage/attributes/setstate/@attributes.Id">
+                                                        @if (attributes.State == (int)State.Active)
+                                                        {
+                                                            <i class="fa fa-check fa-fw"></i> <span>@localizer["Active"]</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <i class="fa fa-close"></i> <span>@localizer["Passive"]</span>
+                                                        }
+                                                    </a>
+                                                </td>
+                                                @if (!attributes.IsRequired)
+                                                {
+                                                    <td>
+                                                        <a href="/@localizer.CurrentLanguage/attributes/values-list/@attributes.Id" class="btn btn-info">
+                                                            <i class="fa fa-map-signs"></i> @localizer["Values"]
+                                                        </a>
+                                                    </td>
+                                                }
+                                                else
+                                                {
+                                                    <td></td>
+                                                }
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>@localizer["Name"]</th>
+                                            <th>@localizer["Edit"]</th>
+                                            <th>@localizer["IsRequired"]</th>
+                                            <th>@localizer["Status"]</th>
+                                            <th>@localizer["Values"]</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    $(function () {
+        $('#attributesList').DataTable({
+            'paging': true,
+            'lengthChange': true,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            'pageLenght': 100
+        });
+    });
+</script>

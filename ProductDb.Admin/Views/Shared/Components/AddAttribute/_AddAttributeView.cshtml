@@ -1,0 +1,59 @@
+﻿@inject CustomLocalizer localizer
+@model AttributesViewModel
+<div class="modal fade" id="modal-attribute" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title">@localizer["Attributes"]</h4>
+            </div>
+            <form method="post" id="addAttribute" onsubmit="return false">
+                <div class="modal-body">
+                    <div class="form-group">
+                        @Html.HiddenFor(model => model.AttributeType)
+                        @Html.HiddenFor(model => model.EntityId)
+                        @Html.DropDownListFor(model => model.Attributes.Id, new SelectList(Model.AddAttributes, "Id", "Name"), "Select", new { @class = "form-control select2", style = "display: block !important" })
+                    </div>
+                    <div class="alert alert-danger hidden">
+                        <h4><i class="icon fa fa-ban"></i> @localizer["Attention"]</h4>
+                        @localizer["NonSelected"]
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">@localizer["Close"]</button>
+                    <button type="submit" class="btn btn-primary">@localizer["Add"]</button>
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script>
+$(document).ready(function () {
+    //Update
+    $("#addAttribute").on("submit", function (event) {
+        var $this = $(this);
+        var frmValues = $this.serialize();
+        $.ajax({
+            cache: false,
+            type: "POST",
+            url: "/@localizer.CurrentLanguage/attributes/insert",
+            data: frmValues,
+            success: function (data) {
+                if (data.result == 'Redirect') {
+                    window.location = data.url;
+                }
+                else if (data.result == 'Failed') {
+                    $('.alert-danger').removeClass('hidden');
+                }
+            }
+        });
+    });
+});
+
+</script>
+

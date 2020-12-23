@@ -1,0 +1,54 @@
+﻿@inject CustomLocalizer localizer
+@model LanguageViewModel
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        @localizer["Languages"]
+    </div>
+    <div class="panel-body">
+        <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs" id="languageTabs">
+                @{ var it = 0; }
+                @foreach (var language in Model.Languages)
+                {
+                    <li><a href="#tab_@it" data-toggle="tab" aria-expanded="false"><img src="@language.LogoPath"> @language.Name</a></li>
+                    it++;
+                }
+            </ul>
+            <div class="tab-content">
+                @{var iter = 0;}
+                @foreach (var kvp in Model.LanguageValues)
+                {
+                    <div class="tab-pane" id="tab_@iter">
+                        @for (int i = 0; i < Model.LanguageValues[kvp.Key].Count(); i++)
+                        {
+                            @Html.HiddenFor(model => model.LanguageValues[kvp.Key][i].Id)
+                            @Html.HiddenFor(model => model.LanguageValues[kvp.Key][i].FieldName)
+                            @Html.HiddenFor(model => model.LanguageValues[kvp.Key][i].LanguageId)
+                            @Html.HiddenFor(model => model.LanguageValues[kvp.Key][i].TableName)
+                            @Html.HiddenFor(model => model.LanguageValues[kvp.Key][i].EntityId)
+                            <div class="form-group">
+                                <label>@Model.LanguageValues[kvp.Key][i].FieldName</label>
+
+                                @*TODO: Refactor*@
+
+                                @if (Model.LanguageValues[kvp.Key][i].FieldName == "Description" || Model.LanguageValues[kvp.Key][i].FieldName == "ShortDescription"
+                                    || Model.LanguageValues[kvp.Key][i].FieldName == "MetaDescription")
+                                {
+                                    @Html.TextAreaFor(model => model.LanguageValues[kvp.Key][i].Value, 10, 5, new { @class = "form-control", placeholder = "Enter language value" })
+                                }
+                                else
+                                {
+                                    @Html.TextBoxFor(model => model.LanguageValues[kvp.Key][i].Value, new { @class = "form-control", placeholder = "Enter language value" })
+                                }
+
+                            </div>
+                        }
+                    </div>
+
+                    iter++;
+                }
+            </div>
+        </div>
+    </div>
+</div>

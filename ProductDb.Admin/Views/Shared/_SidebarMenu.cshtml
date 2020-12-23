@@ -1,0 +1,188 @@
+﻿@using ProductDb.Admin.Helpers.LocalizationHelpers
+@using System.Security.Claims
+@inject CustomLocalizer localizer
+@{
+    string CheckActive(string controller_name, string action_name)
+    {
+        return (ViewContext.RouteData.Values["Action"].ToString() == action_name && ViewContext.RouteData.Values["Controller"].ToString() == controller_name) ? "active" : "";
+    }
+
+    string CheckActiveForController(string controller_name)
+    {
+        return (ViewContext.RouteData.Values["Controller"].ToString() == controller_name) ? "active" : "";
+    }
+
+    var culture = localizer.CurrentLanguage;
+}
+
+<nav class="navbar navbar-static-top">
+    <header class="main-header">
+        <nav class="navbar navbar-static-top" style="margin-bottom:0px !important">
+            <div class="container">
+                <div class="navbar-header">
+                    <a href="~/@culture" class="navbar-brand"><b>BiggPlus</b>DB</a>
+                </div>
+
+                <!-- Collect the nav links, forms, and other content for toggling -->
+                <div class="collapse navbar-collapse pull-left" id="navbar-collapse">
+                    <ul class="nav navbar-nav">
+
+                        <li class="dropdown @CheckActiveForController("Category") @CheckActiveForController("Brand") @CheckActiveForController("Supplier")">
+                            <a class="dropdown-toggle" data-toggle="dropdown">
+                                <i class="fa fa-laptop"></i> <span>@localizer["Specification"]</span>
+                                <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li class="@CheckActive("Category","List")"><a href="~/@culture/category/list"><i class="fa fa-cube"></i> <span>@localizer["Categories"]</span></a></li>
+                                <li class="@CheckActive("Brand","List")"><a href="~/@culture/brand/list"><i class="fa fa-copyright"></i> <span>@localizer["Brands"]</span></a></li>
+                                <li class="@CheckActive("Supplier","List")"><a href="~/@culture/supplier/list"><i class="fa fa-shopping-cart"></i> <span>@localizer["Suppliers"]</span></a></li>
+                            </ul>
+                        </li>
+
+                        <li class="dropdown @CheckActiveForController("Product") @CheckActiveForController("ParentProduct") @CheckActiveForController("ProductVariant") @CheckActiveForController("Import") @CheckActiveForController("ProductDock")">
+                            <a class="dropdown-toggle" data-toggle="dropdown">
+                                <i class="fa fa-globe"></i> <span>@localizer["Products"]</span>
+                                <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li class="@CheckActive("Product","AllList")"><a href="~/@culture/products/alllist"><i class="fa fa-list"></i> @localizer["AllProducts"]</a></li>
+                                <li class="@CheckActive("ParentProduct","List")"><a href="~/@culture/parent-products/list/0"><i class="fa fa-industry"></i> @localizer["ParentProducts"]</a></li>
+                                <li class="@CheckActive("Product","List")"><a href="~/@culture/products/list"><i class="fa fa-registered"></i> @localizer["Products"]</a></li>
+                                <li class="@CheckActive("ProductVariant","Variant")"><a href="~/@culture/productvariant/variant"><i class="fa fa-cubes"></i> @localizer["ProductVariant"] </a></li>
+                                <li class="divider"></li>
+                                <li class="@CheckActive("Product","PurchaseDepartment")"><a href="~/@culture/products/purchase-department"><i class="fa fa-black-tie"></i> <span>@localizer["PurchaseDepartment"]</span></a></li>
+                                <li class="@CheckActive("Import","ExcelDocument")"><a href="~/@culture/import/excelproductimport"><i class="fa fa-file-excel-o"></i> <span>@localizer["ExcelProductUpdate"]</span></a></li>
+                                <li class="@CheckActive("ProductDock","ProductDockList")"><a href="~/@culture/product-dock/list-product-dock/1"><i class="fa fa-upload"></i> @localizer["MigrationProducts"]</a></li>
+                                <li class="@CheckActive("ProductDock","ProductDockBySupplierList")"><a href="~/@culture/product-dock/product-dock-list-suppliers"><i class="fa fa-ship"></i> <span>@localizer["ProductDockImport"]</span></a></li>
+                            </ul>
+                        </li>
+
+                        <li class="dropdown @CheckActiveForController("Warehouse")">
+                            <a class="dropdown-toggle" data-toggle="dropdown">
+                                <i class="fa fa-archive"></i> <span>@localizer["Warehouses"]</span>
+                                <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li class="@CheckActive("Warehouse","WarehouseTypeList")"><a href="~/@culture/warehouse/WarehouseTypeList"><i class="fa fa-map-pin"></i> <span>@localizer["WarehouseTypes"]</span></a></li>
+                                <li class="@CheckActive("Warehouse","WarehouseQueryList")"><a href="~/@culture/warehouse/WarehouseQueryList"><i class="fa fa-gg"></i> <span>@localizer["WarehouseQueries"]</span></a></li>
+                                <li class="@CheckActive("Warehouse","WarehouseStockList")"><a href="~/@culture/warehouse/WarehouseStockList"><i class="fa fa-binoculars"></i> <span>@localizer["WarehouseStocks"] </span></a></li>
+                            </ul>
+                        </li>
+
+                        <li class="dropdown @CheckActiveForController("Store") @CheckActiveForController("Calculator") @CheckActiveForController("Integration") @CheckActiveForController("Import")">
+                            <a class="dropdown-toggle" data-toggle="dropdown">
+                                <i class="fa fa-amazon"></i> <span>@localizer["Stores"]</span>
+                                <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li class="@CheckActive("Store","List")"><a href="~/@culture/store/list"><i class="fa fa-balance-scale"></i> <span>@localizer["Store"]</span></a></li>
+                                <li class="@CheckActive("Store","StoreTypeList")"><a href="~/@culture/store/store-type-list"><i class="fa fa-cc"></i> <span>@localizer["StoreTypes"]</span></a></li>
+                                <li class="@CheckActive("Store","Product")"><a href="~/@culture/store/product"><i class="fa fa-map-signs"></i> <span>@localizer["StoreProducts"] </span></a></li>
+                                <li class="@CheckActive("Calculator","List")"><a href="~/@culture/calculator/list"><i class="fa fa-hdd-o"></i> @localizer["FormulaGroup"]</a></li>
+                                <li class="divider"></li>
+                                <li class="@CheckActive("Integration","List")"><a href="~/@culture/integration/list"><i class="fa fa-trademark"></i> <span>@localizer["Integrations"]</span></a></li>
+                                <li class="@CheckActive("Store","ProductFixing")"><a href="~/@culture/store/productfixing"><i class="fa fa-file-excel-o"></i> <span>@localizer["Store"] @localizer["Products"] @localizer["Fixing"] </span></a></li>
+                                <li class="@CheckActive("Import","ExcelNodelListImport")"><a href="~/@culture/import/excelnodelListImport"><i class="fa fa-file"></i> <span>@localizer["ExcelStoreNodeListUpdate"]</span></a></li>
+                            </ul>
+                        </li>
+
+                        <li class="dropdown @CheckActiveForController("Attributes") @CheckActiveForController("Language") @CheckActiveForController("Currency") @CheckActiveForController("User") @CheckActiveForController("Permission") @CheckActiveForController("User")">
+                            <a class="dropdown-toggle" data-toggle="dropdown">
+                                <i class="fa fa-institution"></i> <span>@localizer["AdminMenu"]</span>
+                                <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li class="@CheckActive("Attributes","List")"><a href="~/@culture/attributes/list"><i class="fa fa-map"></i> <span>@localizer["Attributes"]</span></a></li>
+                                <li class="divider"></li>
+                                <li class="@CheckActive("Language","List")"><a href="~/@culture/language/list"><i class="fa fa-language"></i> <span>@localizer["Languages"]</span></a></li>
+                                <li class="@CheckActive("Currency","List")"><a href="~/@culture/currency/list"><i class="fa fa-turkish-lira"></i> <span>@localizer["Currencies"]</span></a></li>
+                                <li class="@CheckActive("User","List")"><a href="~/@culture/user/list"><i class="fa fa-users"></i> <span>@localizer["Users"]</span></a></li>
+                                <li class="divider"></li>
+                                <li class="@CheckActive("Permission","List")"><a href="~/@culture/permission/list"><i class="fa fa-binoculars"></i> <span>@localizer["Permissions"]</span></a></li>
+                                <li class="@CheckActive("User","RolePermissions")"><a href="~/@culture/user/rolepermissions"><i class="fa fa-eye-slash"></i> <span>@localizer["Role"] @localizer["Permissions"]</span></a></li>
+                            </ul>
+                        </li>
+
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown">
+                                <i class="fa fa-money"></i> <span>@localizer["Pms"]</span>
+                                <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="~/pms/order/order-list"><i class="fa fa-pie-chart"></i> <span>@localizer["Order"] @localizer["List"]</span></a></li>
+                                <li><a href="~/pms/order/exorder-list"><i class="fa fa-pie-chart"></i> <span>@localizer["Order"] @localizer["External"] @localizer["List"]</span></a></li>
+                                <li><a href="~/pms/order/order-import"><i class="fa fa-institution"></i> <span>Order-Import</span></a></li>
+                                <li><a href="~/pms/log/LogList"><i class="fa fa-rss-square"></i> <span>@localizer["Log"] @localizer["List"]</span></a></li>
+                                <li><a href="~/pms/order/get-datediff-invoices/215"><i class="fa fa-pencil"></i> <span>@localizer["DateDiffInvoices"]</span></a></li>
+                                <li><a href="~/pms/order/firm-selection"><i class="fa fa-map"></i> <span>@localizer["ProjectDefination"]</span></a></li>
+                                <li><a href="~/pms/order/order-tracking-number-list"><i class="fa fa-shopping-cart"></i> <span>@localizer["Tracking Number List"]</span></a></li>
+                            </ul>
+                        </li>
+
+                    </ul>
+                </div>
+                <!-- /.navbar-collapse -->
+                <!-- Navbar Right Menu -->
+                <div class="navbar-custom-menu">
+                    <ul class="nav navbar-nav">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="dropdown">
+                                <a class="dropdown-toggle" data-toggle="dropdown">
+                                    <i class="fa fa-flag-o fa-fw"></i>
+                                    <span class="caret"></span>
+                                </a>
+
+                                @{
+                                    string currentController = ViewContext.RouteData.Values["Controller"].ToString();
+                                    string currentAction = ViewContext.RouteData.Values["Action"].ToString();
+                                }
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a asp-controller="@currentController" asp-action="@currentAction" asp-route-lang="en"><img src="~/Assets/dist/img/flags/gb.png" /> English</a>
+                                    </li>
+                                    <li>
+                                        <a asp-controller="@currentController" asp-action="@currentAction" asp-route-lang="tr"><img src="~/Assets/dist/img/flags/tr.png" /> Turkish</a>
+                                    </li>
+                                    <li>
+                                        <a asp-controller="@currentController" asp-action="@currentAction" asp-route-lang="de"><img src="~/Assets/dist/img/flags/de.png" /> German</a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <!-- User Account Menu -->
+                            <li class="dropdown user user-menu">
+                                <!-- Menu Toggle Button -->
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                    <!-- The user image in the navbar-->
+                                    <img src="~/Assets/dist/img/usericon.png" class="user-image" alt="User Image">
+                                    <!-- hidden-xs hides the username on small devices so only the image appears. -->
+                                    <span class="hidden-xs">@User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name).Value</span>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <!-- The user image in the menu -->
+                                    <li class="user-header">
+                                        <img src="~/Assets/dist/img/usericon.png" class="img-circle" alt="User Image">
+                                        <p>
+                                            @User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name).Value
+                                            <small>@User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role).Value</small>
+                                        </p>
+                                    </li>
+                                    <!-- Menu Footer-->
+                                    <li class="user-footer">
+                                        <div class="pull-right">
+                                            <a href="/auth/logout" class="btn btn-default btn-flat">Sign out</a>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                </div>
+                <!-- /.navbar-custom-menu -->
+            </div>
+            <!-- /.container-fluid -->
+        </nav>
+    </header>
+    <!-- /.sidebar -->
+</nav>

@@ -1,0 +1,47 @@
+﻿@inject CustomLocalizer localizer
+@model List<StoreProductMappingModel>
+<section class="content-header clearfix">
+    <h1 class="pull-left">
+        @localizer["Product"]  @localizer["Store"]  @localizer["Price"]
+        <small> @localizer["Info"]</small>
+    </h1>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                @localizer["Product"]  @localizer["Store"]  @localizer["Price"] @localizer["list"]
+                            </div>
+                            <div class="panel-body">
+                                <table id="storePricesList" class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>@localizer["Store"]</th>
+                                            <th>@localizer["Price"]</th>
+                                            <th>@localizer["Currency"]</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model)
+                                        {
+                                            <tr>
+                                                <td>@item.Store.Name</td>
+                                                <td>@item.Price</td>
+                                                <td>@item.Store.Currency.Abbrevation</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+

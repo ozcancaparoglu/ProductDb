@@ -1,0 +1,76 @@
+﻿@inject CustomLocalizer localizer
+@model ChangeParentProductDockViewModel
+
+<div class="modal fade" id="modal-add-parent-product" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="@localizer["Close"]">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title">@localizer["Select"] @localizer["Parent"] @localizer["Product"]</h4>
+            </div>
+            <form method="post" id="addProductParent" enctype="multipart/form-data">
+                @Html.HiddenFor(model => model.id)
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>@localizer["Parent"] @localizer["Product"]</label>
+                        <select class="form-control select2" name="AddParentProductDockId" id="addParentDockId">
+                            <option value="">@localizer["Select"]</option>
+                            @foreach (var parentProduct in Model.ParentProductDocks)
+                            {
+                                <option value="@parentProduct.Id">@parentProduct.Sku - @parentProduct.Title</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="alert alert-danger hidden" id="addProductParent-alert">
+                        <h4><i class="icon fa fa-ban"></i> @localizer["Attention"]</h4>
+                        <span>Something wrong! Please contact the administrator.</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">@localizer["Close"]</button>
+                    <button type="submit" class="btn btn-primary">@localizer["Select"] @localizer["Parent"]</button>
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script>
+    $(function () {
+
+        $('.select2').select2();
+
+        $("form#addProductParent").on("submit", function (e) {
+
+            e.preventDefault();
+            var alert = $("#addProductParent-alert span");
+
+            var data = {
+                id: $("#id").val(),
+                parentId: $("#addParentDockId").val()
+            };
+
+            $.ajax({
+                url: "/@localizer.CurrentLanguage/product-dock/ChangeProductParent",
+                type: "POST",
+                dataType: "json",
+                data: data,
+                success: function (response) {
+                    if (!response.status) {
+                        alert.html(response.message);
+                    }
+                    debugger;
+                    $('#ProductDockSearch').submit();
+                },
+                error: function (response) {
+                    console.log(response.responseText);
+                }
+            });
+        })
+
+
+    })
+</script>

@@ -1,0 +1,97 @@
+﻿@model OrderDetailViewModel
+@{
+    Layout = null;
+}
+
+<form method="post" id="postToLogo" action="/pms/order/postselectedItems" onsubmit="return false">
+    @Html.HiddenFor(x => x.companyId)
+    <div class="modal fade" id="modal-order-detail" style="display: none;">
+        <div class="modal-dialog" style="width:fit-content">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                    <h4 class="modal-title">Sipariş Detay</h4>
+                </div>
+                <div class="modal-body">
+                    <table id="orderList" class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Seç</th>
+                                <th>Sku</th>
+                                <th>Name</th>
+                                <th>Miktar</th>
+                                <th>Fiyat</th>
+                                <th>Kdv</th>
+                                <th>Para Birimi</th>
+                                <th>Puan</th>
+                                <th>Puan Tutar</th>
+                                <th>Kargo Fiyatı</th>
+                                <th>Katalog Kodu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Items.Count; i++)
+                            {
+                                <tr>
+                                    <td>@Html.CheckBoxFor(model => Model.Items[i].check)</td>
+                                    @Html.HiddenFor(model => Model.Items[i].SKU)
+                                    <td>@Model.Items[i].SKU</td>
+                                    <td>@Model.Items[i].ProductName</td>
+                                    <td>@Model.Items[i].Quantity</td>
+                                    <td>@Model.Items[i].Price</td>
+                                    <td>@Model.Items[i].VAT</td>
+                                    <td>@Model.Items[i].Currency</td>
+                                    <td>@Model.Items[i].Points</td>
+                                    <td>@Model.Items[i].PointsValue</td>
+                                    <td>@Model.Items[i].CargoPrice</td>
+                                    <td>@Model.Items[i].CatalogCode</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary"> <span class="glyphicon glyphicon-refresh"></span> Logoda Aç</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+</form>
+<script>
+    $(function () {
+
+        $("#postToLogo").on("submit", function (event) {
+            debugger;
+            var $this = $(this);
+            var frmValues = $this.serialize();
+            $("#cover-spin").show();
+            $.ajax({
+                cache: false,
+                type: "POST",
+                url: "/pms/order/postselecteditems",
+                data: frmValues,
+                success: function (data) {
+                    alert(data.message);
+                },
+                complete: function () {
+                    $("#cover-spin").hide();
+                }
+            });
+        });
+
+        $('#orderList').DataTable({
+            'paging': true,
+            'lengthChange': true,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            'pageLenght': 100
+        });
+    });
+</script>
+

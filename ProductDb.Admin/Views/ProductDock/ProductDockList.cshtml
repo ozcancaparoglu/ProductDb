@@ -1,0 +1,239 @@
+﻿@inject CustomLocalizer localizer
+@model ProductDockViewModel
+
+<link href="~/Assets/dist/css/Loader.css" rel="stylesheet" />
+
+<section class="content-header clearfix">
+    <h1 class="pull-left">
+        @localizer["Migration"] @localizer["Products"]
+        <small>@localizer["Insert"]</small>
+    </h1>
+
+    <div class="pull-right">
+        <button type="button" class="btn bg-blue" data-toggle="modal" data-target="#modal-product-parent">
+            <i class="fa fa-industry"></i>
+            @localizer["Parent"] @localizer["Products"]
+        </button>
+    </div>
+</section>
+
+<section class="content">
+    <div id="cover-spin"></div>
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                @localizer["Dock"] @localizer["Products"]
+                            </div>
+                            <div class="panel-body">
+                                <table id="productDockList" class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th><input type="checkbox" id="checkAll" /></th>
+                                            <th>Sku</th>
+                                            <th style="width:250px;">@localizer["Name"]</th>
+                                            <th>@localizer["Brand"]</th>
+                                            <th>@localizer["Supplier"]</th>
+                                            <th>@localizer["Category"]</th>
+                                            <th>@localizer["Edit"]</th>
+                                            <th>@localizer["Delete"]</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.ProductDocks)
+                                        {
+                                            <tr class="rowtodelete_@item.Id">
+                                                <td><input type="checkbox" name="dockId" value="@item.Id"/></td>
+                                                <td>@item.Sku</td>
+                                                <td>@item.Name</td>
+                                                <td width="150px">@Html.DropDownListFor(model => model.Brands, new SelectList(Model.Brands, "Id", "Name"), localizer["Select"], new { id = "brand_" + item.Id, @class = "form-control select2" })</td>
+                                                <td width="150px">@Html.DropDownListFor(model => model.Suppliers, new SelectList(Model.Suppliers, "Id", "Name"), localizer["Select"], new { id = "supplier_" + item.Id, @class = "form-control select2" })</td>
+                                                <td>@Html.DropDownListFor(model => model.Categories, new SelectList(Model.Categories, "Id", "CategoryNameWithParents"), localizer["Select"], new { id = "categories_" + item.Id, @class = "form-control select2" })</td>
+                                                <td><a class="btn btn-default deleteItem" id="@item.Id">@localizer["Save"]</a></td>
+                                                <td><a class="btn btn-danger notGet" id="@item.Id">@localizer["Delete"]</a></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Sku</th>
+                                            <th style="width:250px;">@localizer["Name"]</th>
+                                            <th>@localizer["Brand"]</th>
+                                            <th>@localizer["Supplier"]</th>
+                                            <th>@localizer["Category"]</th>
+                                            <th>@localizer["Edit"]</th>
+                                            <th>Sil</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<div class="modal fade" id="modal-product-parent" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title">@localizer["Parent"]</h4>
+            </div>
+                <div class="modal-body">
+                    @*<input type="hidden" id="parentProductId" name="ParentProductId" />*@
+                    <div class="form-group">
+                        <label>@localizer["Parent"] @localizer["Product"]</label>
+                        <select class="form-control select2" name="ParentProductId" id="parentProductId">
+                            @foreach (var parentProduct in Model.ParentProducts)
+                            {
+                                <option value="@parentProduct.Id">@parentProduct.Sku - @parentProduct.Title</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="alert alert-danger hidden" id="productParent-edit-alert">
+                        <h4><i class="icon fa fa-ban"></i> @localizer["Attention"]</h4>
+                        <span>@localizer["ItContact"]</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">@localizer["Close"]</button>
+                    <button id="migrate-products" type="button" class="btn btn-primary">@localizer["Save"]</button>
+                </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+@if (!string.IsNullOrWhiteSpace(ViewBag.NoResultFound))
+{
+    <section class="content">
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="alert alert-warning">
+                                <h4><i class="icon fa fa-warning"></i> @ViewBag.NoResultFound</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+<script>
+    $(function () {
+        $('.select2').select2();
+
+        $('#productDockList').DataTable({
+            'paging': true,
+            'lengthChange': true,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            'pageLength': 100
+        });
+
+
+        $("#checkAll").click(function () {
+            $('input:checkbox').not(this).prop('checked', this.checked);
+        });
+
+        $("#migrate-products").click(function () {
+            $('#cover-spin').show();
+            var dockIds = [];
+            $.each($("input[name='dockId']:checked"), function(){
+                dockIds.push($(this). val());
+            });
+
+            var parentProductDockId = $('#parentProductId option:selected').val();
+
+            var url = "/@localizer.CurrentLanguage/product-dock/insert-productdock-with-parent/";
+
+            $.ajax({
+                url: url,
+                cache: false,
+                data: { parentProductDockId: parentProductDockId , dockIds: dockIds },
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    if (data == "1") {
+                        $('#cover-spin').hide();
+                        $("#modal-product-parent").modal('hide');
+                        for (i = 0; i < dockIds.length; ++i) {
+                            $(".rowtodelete_" + dockIds[i].toString()).animate({ 'line-height': 0 }, 1).hide('slow');
+                        }
+                        
+                    }
+                    else if (data == "Error") {
+                        alert("This product can not be deleted.");
+                        $('#cover-spin').hide();
+                    }
+                }
+            });
+            
+        });
+
+        $('#productDockList tbody').on('click', '.notGet', function () {
+            $('#cover-spin').show();
+            var id = this.id;
+            var url = "/@localizer.CurrentLanguage/product-dock/not-insert-product/" + id;
+            $.ajax({
+                url: url,
+                cache: false,
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    if (data == "1") {
+                        $('#cover-spin').hide();
+                        $(".rowtodelete_" + id.toString()).animate({ 'line-height': 0 }, 1).hide('slow');
+                    }
+                    else if (data == "Error") {
+                        alert("This product can not be deleted.");
+                        $('#cover-spin').hide();
+                    }
+                }
+            });
+        });
+
+        $('#productDockList tbody').on('click', '.deleteItem', function () {
+            $('#cover-spin').show();
+            var id = this.id;
+            var parentId = $('#parentProduct_' + id).val();
+            var brand = $('#brand_' + id).val();
+            var categories = $('#categories_' + id).val();
+            var supplier = $('#supplier_' + id).val();
+            var url = "/@localizer.CurrentLanguage/product-dock/add-product";
+            $.ajax({
+                url: url,
+                data: { id: id, parentId: parentId, brand: brand, categories: categories, supplier: supplier },
+                cache: false,
+                type: "POST",
+                success: function (data) {
+                    if (data == "1") {
+                        $('#cover-spin').hide();
+                        $(".rowtodelete_" + id.toString()).animate({ 'line-height': 0 }, 1).hide('slow');
+                    }
+                    else if (data == "Error") {
+                        alert("This product can not be migrated. Please pass this product.");
+                        $('#cover-spin').hide();
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+

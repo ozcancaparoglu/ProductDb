@@ -1,0 +1,92 @@
+﻿@model List<WarehouseTypeModel>
+
+@inject CustomLocalizer localizer
+
+<section class="content-header clearfix">
+    <h1 class="pull-left">
+        @localizer["Warehouse"] @localizer["Type"] @localizer["List"]
+        <small>@localizer["List"]</small>
+    </h1>
+
+    <div class="pull-right">
+        <a href="/@localizer.CurrentLanguage/warehouse/createWarehouseType" class="btn bg-blue">
+            <i class="fa fa-plus"></i>
+            @localizer["Add"] @localizer["New"]
+        </a>
+    </div>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                @localizer["Warehouse"]  @localizer["Type"]  @localizer["List"]
+                            </div>
+                            <div class="panel-body">
+                                <table id="warehouseTypeList" class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th> @localizer["Name"]</th>
+                                            <th> @localizer["Edit"]</th>
+                                            <th> @localizer["Status"]</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model)
+                                        {
+                                            <tr>
+                                                <td>@item.Name</td>
+                                                <td>
+                                                    <a href="/@localizer.CurrentLanguage/warehouse/editWarehouseType/@item.Id" class="btn btn-default">
+                                                        <i class="fa fa-edit"></i> @localizer["Edit"]
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <a href="/@localizer.CurrentLanguage/warehouse/warehouseTypeSetState/@item.Id">
+                                                        @if (item.State == (int)State.Active)
+                                                        {
+                                                            <i class="fa fa-check fa-fw"></i> <span> @localizer["Active"]</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <i class="fa fa-close"></i> <span>@localizer["Passive"]</span>
+                                                        }
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th> @localizer["Name"]</th>
+                                            <th> @localizer["Edit"]</th>
+                                            <th> @localizer["Status"]</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    $(function () {
+        $('#warehousetypeList').DataTable({
+            'paging': true,
+            'lengthChange': true,
+            'searching': true,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            'pageLenght': 100
+        });
+    });
+</script>

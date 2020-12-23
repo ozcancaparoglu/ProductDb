@@ -1,0 +1,133 @@
+﻿@inject CustomLocalizer localizer
+@model ProductDockVariantViewModel
+
+<div class="modal fade" id="modal-product-variant" style="display: none;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" id="addProducDockVariant" onsubmit="return false">
+                @Html.HiddenFor(x => x.ParentProductDockId)
+                <div class="modal-body">
+                    <fieldset>
+                        <legend><h3> @localizer["Selected"] @localizer["Product"] @localizer["Info"]</h3></legend>
+                        <table id="productDock" class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>@localizer["Picture"]</th>
+                                    <th>Sku</th>
+                                    <th>@localizer["Name"]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        @if (Model.ProductDock.Pictures.Count > 0)
+                                        {
+                                            <img src="@Model.ProductDock.Pictures.FirstOrDefault().DownloadUrl" height="100" width="100" />
+                                        }
+                                    </td>
+                                    <td>
+                                        @Model.ProductDock.Sku
+                                    </td>
+                                    <td>
+                                        @Model.ProductDock.Name
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </fieldset>
+                    <hr />
+                    <div id="grid"></div>
+                    <div class="alert alert-danger hidden">
+                        <h4><i class="icon fa fa-ban"></i> @localizer["Attention"]</h4>
+                        @localizer["NonSelected"]
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">@localizer["Close"]</button>
+                    <button type="submit" class="btn btn-primary">@localizer["Save"]</button>
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script>
+
+
+    var selectedIDs = [];
+
+    function onChange(arg) {
+        selectedIDs = this.selectedKeyNames();
+        debugger;
+        kendoConsole.log("The selected product ids are: [" + this.selectedKeyNames().join(", ") + "]");
+    }
+
+    $(function () {
+        var parentId = $("#ParentProductDockId").val();
+        $("#grid").kendoGrid({
+            dataSource: {
+                pageSize: 10,
+                transport: {
+                    read: {
+                        url: "/@localizer.CurrentLanguage/product-dock/GetNotVariantedProductDocks/" + parentId,
+                        dataType: "json"
+                    }
+                },
+                schema: {
+                    model: {
+                        id: "id"
+                    }
+                }
+            },
+            filterable: {
+                mode: "row"
+            },
+            pageable: true,
+            scrollable: false,
+            persistSelection: true,
+            sortable: true,
+            change: onChange,
+            columns: [
+                { selectable: true, width: "50px" },
+                { field: "name", title: "Name" },
+                { field: "sku", title: "Sku" }
+            ]
+        });
+        //Update
+        $("#addProducDockVariant").on("submit", function (event) {
+
+            // Selected Control
+            if (selectedIDs.length < 1) {
+                alert(@localizer["NonSelected"]);
+                return;
+            }
+            // data
+            var data = {
+                parentId: parentId,
+                selectedIDs: selectedIDs
+            };
+            // ajax
+            $.ajax({
+                cache: false,
+                type: "POST",
+                url: "/@localizer.CurrentLanguage/product-dock/SaveProductVariant/" + parentId,
+                data: data,
+                success: function (data) {
+                    if (data.status) {
+                        $('#ProductDockSearch').submit();
+                    }
+                    else {
+                        $('.alert-danger').removeClass('hidden');
+                    }
+                }
+            });
+        });
+    })
+
+
+
+</script>
+

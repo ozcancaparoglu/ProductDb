@@ -1,0 +1,129 @@
+﻿@model UserViewModel
+@inject CustomLocalizer localizer
+@using (Html.BeginForm("Create", "User", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.HiddenFor(model => model.User.Id)
+    @Html.HiddenFor(model => model.User.ProcessedBy)
+    <!-- Content Header (Page header) -->
+    <section class="content-header clearfix">
+        <h1 class="pull-left">
+            @localizer["User"]
+            <small>@localizer["Create"]</small>
+        </h1>
+
+        <div class="pull-right">
+            <button type="submit" name="save" class="btn bg-blue">
+                <i class="fa fa-floppy-o"></i>
+                @localizer["Save"]
+            </button>
+            <a href="/@localizer.CurrentLanguage/user/list" class="btn bg-red">
+                <i class="fa fa-ban"></i>
+                @localizer["Cancel"]
+            </a>
+        </div>
+    </section>
+
+
+    @if (!ViewBag.Validation)
+    {
+        <section class="content">
+            <div class="row">
+                <div class="box box-primary">
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="alert alert-danger">
+                                    <h4><i class="icon fa fa-ban"></i> @localizer["ValidationFailure"]</h4>
+                                    Please be careful Email, Name, Password and User role are mandotary. <br />
+                                    You cannot create a user with the existing email. <br />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+
+    <section class="content">
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">@localizer["Add"] @localizer["New"] @localizer["User"]</h3>
+                </div>
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    @localizer["General"] @localizer["Information"]
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label for="userName">@localizer["User"] @localizer["Name"]</label>
+                                        @Html.TextBoxFor(model => model.User.Username, new { @class = "form-control", placeholder = "Enter user name" })
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="userEmail">@localizer["Email"]</label>
+                                        @Html.TextBoxFor(model => model.User.Email, new { @class = "form-control", placeholder = "Enter email" })
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="userPassword">@localizer["Password"]</label>
+                                        @Html.TextBoxFor(model => model.Password, new { @class = "form-control", placeholder = "Enter password" })
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="userRole">@localizer["User"] @localizer["Role"]</label>
+                                        @Html.DropDownListFor(model => model.User.UserRoleId, new SelectList(Model.UserRoles, "Id", "Name"), "Select", new { @class = "form-control select2" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="RolePermissionList">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+<!-- Page script -->
+<script>
+    $(function () {
+
+        //var UserRole = $("#User_UserRoleId");
+        $('.select2').select2();
+
+
+        //UserRole.on("change", function () {
+        //    var id = $(this).val();
+        //    if (id != "") {
+        //        GetUserRoles(id);
+        //    }
+        //    else
+        //        $(".RolePermissionList").html('');
+        //});
+    });
+
+    @*function GetUserRoles(id) {
+        var list = $(".RolePermissionList");
+        list.html('');
+
+        var url = "/@localizer.CurrentLanguage/User/GetUserRoles/" + id;
+        $.ajax({
+            cache: false,
+            async: true,
+            url: url,
+            dataType: "html",
+            type: "GET",
+            success: function (response) {
+                list.html(response);
+            },
+            error: function (response) {
+                alert(response.responseText);
+            }
+        })
+    }*@
+
+</script>
